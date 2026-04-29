@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotiza tu Evento | La Abuela Cocina Urbana</title>
+    
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        .quote-header {
+            text-align: center;
+            padding: 60px 24px 30px;
+            background: linear-gradient(to bottom, rgba(18,18,18,0.4), var(--bg)), url('../img/evento.WEBP') center/cover no-repeat;
+            min-height: 35vh;
+            display: flex; flex-direction: column; justify-content: flex-end; border-bottom: 1px solid var(--border);
+        }
+        .quote-header h1 {
+            font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3rem); color: var(--gold);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.9); margin-bottom: 10px;
+        }
+        .quote-header p { color: #fff; font-size: 1.1rem; text-shadow: 1px 1px 5px rgba(0,0,0,0.9); }
+        
+        .quote-container {
+            max-width: 700px; margin: -40px auto 60px; background: var(--bg-card); padding: 40px;
+            border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--border);
+            position: relative; z-index: 10;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text); font-weight: 600; font-size: 0.95rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 15px; background: var(--bg); border: 1px solid var(--border);
+            color: var(--text); border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold); }
+        
+        .form-row { display: flex; gap: 20px; }
+        .form-row .form-group { flex: 1; }
+
+        .live-quote-box {
+            background: var(--bg); border: 1px solid var(--gold); border-radius: var(--radius-sm);
+            padding: 20px; margin-bottom: 20px; text-align: right;
+        }
+        .live-quote-row { display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--text-muted); font-size: 0.95rem; }
+        .live-quote-total { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); color: var(--gold); font-size: 1.3rem; font-weight: 700; }
+
+        .btn-submit {
+            width: 100%; background: var(--gold); color: var(--bg-header); border: none; padding: 16px;
+            font-size: 1.1rem; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer;
+            transition: background 0.3s, transform 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .btn-submit:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+        .btn-back {
+            display: flex; align-items: center; gap: 8px; background: transparent; color: var(--text);
+            border: 1px solid var(--border); padding: 8px 16px; border-radius: 50px; text-decoration: none;
+            font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease;
+        }
+        .btn-back:hover { background: var(--border); }
+
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; gap: 0; }
+            .quote-container { padding: 25px; margin: 0 15px 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="../index.html" class="logo-container">
+                <img src="../img/logo.png" alt="Logo La Abuela" class="logo-img">
+                <div class="logo-text-wrap">
+                    <span class="logo-tag">Cocina Urbana</span>
+                    <span class="logo-name">La Abuela</span>
+                </div>
+            </a>
+            <a href="../index.html" class="btn-back">← Volver al Menú</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="quote-header">
+            <h1>Cotiza tu Evento</h1>
+            <p>Cotización inmediata para tu celebración especial</p>
+            <br>
+        </section>
+
+        <section class="quote-container">
+            <form id="event-form" onsubmit="processQuote(event)">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-name">Nombre completo</label>
+                        <input type="text" id="event-name" placeholder="Ej: Carlos Ramírez" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-phone">Teléfono de contacto</label>
+                        <input type="tel" id="event-phone" placeholder="Ej: 7000-0000" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-date">Fecha tentativa</label>
+                        <input type="date" id="event-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-time">Hora tentativa</label>
+                        <input type="time" id="event-time" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-menu">Menú del Evento</label>
+                        <select id="event-menu" onchange="calculateTotal()" required>
+                            <option value="" data-price="0">Selecciona un menú...</option>
+                            <option value="Menú de Pollo" data-price="5">Menú de Pollo - $5.00 c/u</option>
+                            <option value="Menú de Carne" data-price="6">Menú de Carne - $6.00 c/u</option>
+                            <option value="Menú Mar y Tierra" data-price="7">Menú Mar y Tierra - $7.00 c/u</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-guests">Cantidad de personas</label>
+                        <input type="number" id="event-guests" min="1" placeholder="Ej: 20" oninput="calculateTotal()" required>
+                    </div>
+                </div>
+
+                <div class="live-quote-box">
+                    <div class="live-quote-row">
+                        <span>Subtotal de Platillos:</span>
+                        <span id="calc-subtotal">$0.00</span>
+                    </div>
+                    <div class="live-quote-row">
+                        <span>Transporte y Servicio:</span>
+                        <span id="calc-service">$0.00</span>
+                    </div>
+                    <div class="live-quote-total">
+                        <span>Total Inversión:</span>
+                        <span id="calc-total">$0.00</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    Generar Cotización en PDF y Continuar
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 <strong>La Abuela Cocina Urbana</strong> · El Salvador.</p>
+    </footer>
+
+    <script>
+        function calculateTotal() {
+        const menuSelect = document.getElementById('event-menu');
+        const guestsInput = document.getElementById('event-guests');
+ 
+        const price = parseFloat(menuSelect.options[menuSelect.selectedIndex].dataset.price || 0);
+        const guests = parseInt(guestsInput.value || 0);
+ 
+        let subtotal = price * guests;
+        let serviceFee = subtotal > 0 ? 20.00 : 0.00;
+        let total = subtotal + serviceFee;
+ 
+        document.getElementById('calc-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+        document.getElementById('calc-service').innerText  = `$${serviceFee.toFixed(2)}`;
+        document.getElementById('calc-total').innerText    = `$${total.toFixed(2)}`;
+ 
+        return { price, guests, subtotal, serviceFee, total };
+    }
+ 
+    function processQuote(event) {
+        event.preventDefault();
+ 
+        const name     = document.getElementById('event-name').value;
+        const phone    = document.getElementById('event-phone').value;
+        const date     = document.getElementById('event-date').value;
+        const time     = document.getElementById('event-time').value;
+        const menuSelect = document.getElementById('event-menu');
+        const menuName = menuSelect.options[menuSelect.selectedIndex].value;
+        const totals   = calculateTotal();
+ 
+        // ── jsPDF setup ──────────────────────────────────────────────
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+ 
+        const pageW  = doc.internal.pageSize.getWidth();   // 612 pt
+        const margin = 40;
+        const contentW = pageW - margin * 2;
+ 
+        // Brand colours
+        const brown  = [166, 93, 55];   // #A65D37
+        const dark   = [18,  18, 18];   // #121212
+        const grey   = [100, 100, 100];
+        const lightBg= [250, 250, 245];
+ 
+        let y = margin;
+ 
+        // ── HEADER BAR ───────────────────────────────────────────────
+        doc.setFillColor(...brown);
+        doc.rect(0, 0, pageW, 70, 'F');
+ 
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(28);
+        doc.setTextColor(255, 255, 255);
+        doc.text('La Abuela', pageW / 2, 32, { align: 'center' });
+ 
+        doc.setFontSize(9);
+        doc.setCharSpace(4);
+        doc.text('COCINA URBANA', pageW / 2, 48, { align: 'center' });
+        doc.setCharSpace(0);
+ 
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('COTIZACIÓN DE EVENTO', pageW / 2, 62, { align: 'center' });
+ 
+        y = 95;
+ 
+        // ── INFO BOX ─────────────────────────────────────────────────
+        doc.setFillColor(...lightBg);
+        doc.setDrawColor(220, 220, 220);
+        doc.roundedRect(margin, y, contentW, 75, 6, 6, 'FD');
+ 
+        // Left column
+        doc.setFontSize(8);
+        doc.setTextColor(...grey);
+        doc.setFont('helvetica', 'normal');
+        doc.text('CLIENTE', margin + 15, y + 18);
+        doc.setFontSize(11);
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.text(name, margin + 15, y + 32);
+ 
+        doc.setFontSize(8);
+        doc.setTextColor(...grey);
+        doc.setFont('helvetica', 'normal');
+        doc.text('TELÉFONO', margin + 15, y + 50);
+        doc.setFontSize(11);
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.text(phone, margin + 15, y + 64);
+ 
+        // Right column
+        const col2x = margin + contentW / 2 + 10;
+        doc.setFontSize(8);
+        doc.setTextColor(...grey);
+        doc.setFont('helvetica', 'normal');
+        doc.text('FECHA DEL EVENTO', col2x, y + 18);
+        doc.setFontSize(11);
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.text(date, col2x, y + 32);
+ 
+        doc.setFontSize(8);
+        doc.setTextColor(...grey);
+        doc.setFont('helvetica', 'normal');
+        doc.text('HORA DE INICIO', col2x, y + 50);
+        doc.setFontSize(11);
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.text(time, col2x, y + 64);
+ 
+        y += 95;
+ 
+        // ── SERVICES TABLE ───────────────────────────────────────────
+        doc.autoTable({
+            startY: y,
+            margin: { left: margin, right: margin },
+            head: [['Descripción del Servicio', 'Cantidad', 'Precio Unit.', 'Total']],
+            body: [
+                [
+                    menuName,
+                    `${totals.guests} personas`,
+                    `$${totals.price.toFixed(2)}`,
+                    `$${totals.subtotal.toFixed(2)}`
+                ],
+                [
+                    'Logística, Transporte y Servicio',
+                    '1 evento',
+                    '$20.00',
+                    `$${totals.serviceFee.toFixed(2)}`
+                ]
+            ],
+            headStyles: {
+                fillColor: brown,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 10,
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { halign: 'left',   cellWidth: 230 },
+                1: { halign: 'center', cellWidth: 100 },
+                2: { halign: 'right',  cellWidth: 90  },
+                3: { halign: 'right',  cellWidth: 90  }
+            },
+            bodyStyles: { fontSize: 10, textColor: dark },
+            alternateRowStyles: { fillColor: [252, 248, 244] },
+            theme: 'striped'
+        });
+ 
+        y = doc.lastAutoTable.finalY + 20;
+ 
+        // ── TOTALS BOX ───────────────────────────────────────────────
+        const boxW = 240;
+        const boxX = pageW - margin - boxW;
+ 
+        doc.setFillColor(...lightBg);
+        doc.setDrawColor(220, 200, 180);
+        doc.roundedRect(boxX, y, boxW, 80, 6, 6, 'FD');
+ 
+        // Subtotal row
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...grey);
+        doc.text('Subtotal platillos:', boxX + 15, y + 22);
+        doc.setTextColor(...dark);
+        doc.text(`$${totals.subtotal.toFixed(2)}`, boxX + boxW - 15, y + 22, { align: 'right' });
+ 
+        // Service row
+        doc.setTextColor(...grey);
+        doc.text('Servicio:', boxX + 15, y + 40);
+        doc.setTextColor(...dark);
+        doc.text(`$${totals.serviceFee.toFixed(2)}`, boxX + boxW - 15, y + 40, { align: 'right' });
+ 
+        // Divider
+        doc.setDrawColor(...brown);
+        doc.setLineWidth(1.2);
+        doc.line(boxX + 10, y + 52, boxX + boxW - 10, y + 52);
+ 
+        // Total row
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...brown);
+        doc.text('TOTAL A INVERTIR:', boxX + 15, y + 70);
+        doc.text(`$${totals.total.toFixed(2)}`, boxX + boxW - 15, y + 70, { align: 'right' });
+ 
+        y += 105;
+ 
+        // ── THANK YOU BANNER ─────────────────────────────────────────
+        doc.setFillColor(245, 240, 235);
+        doc.setDrawColor(200, 180, 160);
+        doc.setLineDashPattern([4, 2], 0);
+        doc.roundedRect(margin, y, contentW, 60, 6, 6, 'FD');
+        doc.setLineDashPattern([], 0);
+ 
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...dark);
+        doc.text('¡Gracias por preferirnos para su evento!', pageW / 2, y + 24, { align: 'center' });
+ 
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...grey);
+        doc.text('"El sabor de casa, a tu mesa"', pageW / 2, y + 42, { align: 'center' });
+ 
+        y += 80;
+ 
+        // ── FOOTER NOTE ──────────────────────────────────────────────
+        doc.setFontSize(8);
+        doc.setTextColor(160, 160, 160);
+        doc.text('Documento generado automáticamente. Los precios son válidos por 15 días.', pageW / 2, y, { align: 'center' });
+        doc.text('Para reservar, adjunte este PDF a nuestro WhatsApp oficial.', pageW / 2, y + 14, { align: 'center' });
+ 
+        // ── SAVE ─────────────────────────────────────────────────────
+        const filename = `Cotizacion_LaAbuela_${name.replace(/\s+/g, '_')}.pdf`;
+        doc.save(filename);
+ 
+        // ── WHATSAPP REDIRECT ────────────────────────────────────────
+        setTimeout(() => {
+            alert("¡Tu cotización en PDF se ha descargado exitosamente!\n\nSerás redirigido a WhatsApp. Por favor, ADJUNTA EL PDF en el chat para proceder con tu reservación.");
+            const whatsappNumber = "50370483939";
+            const message = `¡Saludos a personal de La Abuela Cocina Urbana!\n\nAcabo de generar una cotización en su sitio web para un evento a nombre de ${name}.\n\nLes adjunto el PDF con los detalles para proceder con la reservación.`;
+            window.location.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+        }, 800);
+    }
+    </script>
+</body>
+</html>

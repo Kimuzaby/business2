@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Abuela Cocina Urbana | Menú y Pedidos</title>
+    
+    <link rel="icon" type="image/png" href="img/logo.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="#" class="logo-container">
+                <img src="img/logo.png" alt="Logo La Abuela" class="logo-img">
+                <div class="logo-text-wrap">
+                    <span class="logo-tag">Cocina Urbana</span>
+                    <span class="logo-name">La Abuela</span>
+                </div>
+            </a>
+            <button class="cart-btn" onclick="toggleCart()">
+                🛒 Mi pedido <span class="cart-badge" id="cart-count">0</span>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>El sabor de casa, a tu mesa</h1>
+                <p>Descubre nuestro menú urbano, desde platillos tradicionales hasta las mejores burgers de la ciudad.</p>
+            </div>
+        </section>
+
+        <section class="events-section">
+            <div class="events-content">
+                <div class="events-text">
+                    <h2>¡Celebra con Nosotros!</h2>
+                    <p>Nos encanta ser parte de tus momentos especiales. Ya sea un cumpleaños, una reunión familiar o un evento corporativo, en La Abuela te recibimos con el calor de hogar y el sabor urbano que nos caracteriza.</p>
+                    <h3>¿Quieres hacer tu evento con nosotros?</h3>
+                    <a href="cotiza/index.html" class="btn-event" style="text-decoration: none; display: inline-block;">¡Cotiza aquí!</a>
+                </div>
+                <div class="events-image">
+                    <img src="img/evento.webp" alt="Evento en La Abuela">
+                </div>
+            </div>
+        </section>
+
+        <div class="menu-header">
+            <h2>MENÚ DE PEDIDOS</h2>
+            <div class="divider"></div>
+        </div>
+
+        <div class="category-tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'tab-platillos')">Platillos</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-burgers')">Burgers & Papas</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-tacos')">Tacos & Nachos</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-tortas')">Tortas, Gringas & Burritos</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-bebidas')">Bebidas & Extras</button>
+        </div>
+
+        <div class="menu-wrapper">
+            
+            <div id="tab-platillos" class="menu-tab active">
+                <div class="menu-grid">
+                    <div class="product-card">
+                        <img src="img/food.png" alt="Plato de Chicharrones" class="product-img">
+                        <div class="product-info">
+                            <div class="card-header"><span class="product-title">Plato de Chicharrones</span><span class="product-price">$5.50</span></div>
+                            <p class="product-desc">Chicharrones, casamiento, chirmol, cebollitas encurtidas, tortilla frita y limón.</p>
+                            <button class="btn-add" onclick="addToCart('plat-1', 'Plato de Chicharrones', 5.50)">+ Agregar</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <img src="img/food.png" alt="Ivette del Mar" class="product-img">
+                        <div class="product-info">
+                            <div class="card-header"><span class="product-title">Ivette del Mar</span><span class="product-price">$6.50</span></div>
+                            <p class="product-desc">Camarones empanizados, chirmol, casamiento, aderezo mayocilantro, cebollitas encurtidas, tortilla frita.</p>
+                            <button class="btn-add" onclick="addToCart('plat-2', 'Ivette del Mar', 6.50)">+ Agregar</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <img src="img/food.png" alt="Churrasquito" class="product-img">
+                        <div class="product-info">
+                            <div class="card-header"><span class="product-title">Churrasquito</span><span class="product-price">$7.50</span></div>
+                            <p class="product-desc">6 onz de lomo de res, casamiento, chirmol, tortillitas fritas y salsa chimichurry.</p>
+                            <button class="btn-add" onclick="addToCart('plat-3', 'Churrasquito', 7.50)">+ Agregar</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <img src="img/food.png" alt="Miami" class="product-img">
+                        <div class="product-info">
+                            <div class="card-header"><span class="product-title">Miami</span><span class="product-price">$6.50</span></div>
+                            <p class="product-desc">3 onz de chicharrones, 6 camarones al panko, cebollitas encurtidas, aderezo chipotle, pepino y tortilla frita.</p>
+                            <button class="btn-add" onclick="addToCart('plat-4', 'Miami', 6.50)">+ Agregar</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <img src="img/food.png" alt="El Marrano" class="product-img">
+                        <div class="product-info">
+                            <div class="card-header"><span class="product-title">El Marrano</span><span class="product-price">$6.50</span></div>
+                            <p class="product-desc">8 onz de panceta de cerdo, chirmol, cebollitas encurtidas, guacamole y tortilla frita.</p>
+                            <button class="btn-add" onclick="addToCart('plat-5', 'El Marrano', 6.50)">+ Agregar</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <img src="img/food.png" alt="Bandeja Paisa" class="product-img">
+                        <div class="product-info">
+                            <div class="card-header"><span class="product-title">Bandeja Paisa</span><span class="product-price">$9.50</span></div>
+                            <p class="product-desc">Panceta de cerdo crocante, chorizo, plátanos fritos, casamiento, huevo estrellado, guacamole, chirmol y tortillas.</p>
+                            <button class="btn-add" onclick="addToCart('plat-6', 'Bandeja Paisa', 9.50)">+ Agregar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-burgers" class="menu-tab">
+                <div class="menu-grid">
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Doble Chorriada</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">Doble carne 100% res, doble queso cheddar, doble tocino, cebolla morada. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-1', 'Doble Chorriada', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Frankie Rivers</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">Doble carne res, doble cheddar, cebolla morada, pepinillos, doble tocino ahumado, BBQ. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-2', 'Frankie Rivers', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">La Casera</span><span class="product-price">$5.50</span></div>
+                        <p class="product-desc">Carne res, lechuga, tomate, aderezo de la casa, tocino, queso blanco derretido, pan casero. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-3', 'La Casera', 5.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Speedy Gonzales</span><span class="product-price">$6.00</span></div>
+                        <p class="product-desc">Carne res, aguacate, chiles jalapeños, queso derretido, lechuga, tomate, cebolla, tocino crocante. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-4', 'Speedy Gonzales', 6.00)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Hamburguesa Cheddar</span><span class="product-price">$6.00</span></div>
+                        <p class="product-desc">Carne res, lechuga, tomate, cebolla, cheddar derretido, tocino, huevo estrellado. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-5', 'Hamburguesa Cheddar', 6.00)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Honolulu</span><span class="product-price">$6.00</span></div>
+                        <p class="product-desc">Carne res, piña asada, tocino ahumado, queso blanco derretido, cebolla morada, lechuga, tomate. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-6', 'Honolulu', 6.00)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Chimyburger</span><span class="product-price">$5.50</span></div>
+                        <p class="product-desc">Carne res, aderezo casa, queso blanco derretido, lechuga, tomate, cebolla, chimichurry. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-7', 'Chimyburger', 5.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burger" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Burger JR</span><span class="product-price">$5.00</span></div>
+                        <p class="product-desc">Carne de res o pollo, queso cheddar, lechuga, tomate y cebolla. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('burg-8', 'Burger JR', 5.00)">+ Agregar</button>
+                    </div></div>
+                    
+                    <div class="product-card"><img src="img/food.png" alt="Papas" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Papas Chingonas</span><span class="product-price">$4.50</span></div>
+                        <p class="product-desc">Papas fritas cubiertas de queso cheddar, aguacate, tocino y chirmol.</p>
+                        <button class="btn-add" onclick="addToCart('pap-1', 'Papas Chingonas', 4.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Papas" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Papas Puercas</span><span class="product-price">$4.50</span></div>
+                        <p class="product-desc">Papas fritas, chicharrones de cerdo, cebollitas encurtidas y chirmol.</p>
+                        <button class="btn-add" onclick="addToCart('pap-2', 'Papas Puercas', 4.50)">+ Agregar</button>
+                    </div></div>
+                </div>
+            </div>
+
+            <div id="tab-tacos" class="menu-tab">
+                <div class="menu-grid">
+                    <div class="product-card"><img src="img/food.png" alt="Nachos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Nachos Mixtos</span><span class="product-price">$5.50</span></div>
+                        <p class="product-desc">Nachos, frijoles molidos, cheddar, chirmol, guacamole, jalapeños, carne a elección y costra de queso.</p>
+                        <button class="btn-add" onclick="addToCart('nac-1', 'Nachos Mixtos', 5.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Nachos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Nachos de Birria</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">Nachos, frijoles molidos, cheddar, chirmol, guacamole, jalapeños, birria y costra de queso.</p>
+                        <button class="btn-add" onclick="addToCart('nac-2', 'Nachos de Birria', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Tacos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Tacos de Birria (4)</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">4 Tacos de birria, tortilla de maíz, queso derretido, cebolla, cilantro y caldo de birria.</p>
+                        <button class="btn-add" onclick="addToCart('tac-1', 'Tacos de Birria (4)', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Tacos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Tacos Tradicionales (3)</span><span class="product-price">$4.75</span></div>
+                        <p class="product-desc">Doble tortilla maíz, carne a elección (Res/Pollo/Cerdo), cebolla, tomate, cilantro.</p>
+                        <button class="btn-add" onclick="addToCart('tac-2', 'Tacos Tradicionales (3)', 4.75)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Tacos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Tacos Tradicionales (4)</span><span class="product-price">$5.75</span></div>
+                        <p class="product-desc">Doble tortilla maíz, carne a elección (Res/Pollo/Cerdo), cebolla, tomate, cilantro.</p>
+                        <button class="btn-add" onclick="addToCart('tac-3', 'Tacos Tradicionales (4)', 5.75)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Tacos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Tacos de Camarón (3)</span><span class="product-price">$5.00</span></div>
+                        <p class="product-desc">Camarón crocante, doble tortilla maíz, coles law, aderezo mayocilantro.</p>
+                        <button class="btn-add" onclick="addToCart('tac-4', 'Tacos Camarón (3)', 5.00)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Tacos" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Tacos de Camarón (4)</span><span class="product-price">$6.00</span></div>
+                        <p class="product-desc">Camarón crocante, doble tortilla maíz, coles law, aderezo mayocilantro.</p>
+                        <button class="btn-add" onclick="addToCart('tac-5', 'Tacos Camarón (4)', 6.00)">+ Agregar</button>
+                    </div></div>
+                </div>
+            </div>
+
+            <div id="tab-tortas" class="menu-tab">
+                <div class="menu-grid">
+                    <div class="product-card"><img src="img/food.png" alt="Torta" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Torta Tex Mex</span><span class="product-price">$5.50</span></div>
+                        <p class="product-desc">Fajitas de res, queso derretido, casamiento, guacamole y chirmol en pan ciabatta. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('tor-1', 'Torta Tex Mex', 5.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Torta" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Torta de Birria</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">Carne de birria, chirmol, casamiento, guacamole, queso derretido, caldo de birria. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('tor-2', 'Torta de Birria', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Torta" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Torta Tijuana</span><span class="product-price">$5.50</span></div>
+                        <p class="product-desc">Cerdo al pastor, queso, casamiento, guacamole, chirmol, cebollas encurtidas, piña. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('tor-3', 'Torta Tijuana', 5.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Torta" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Chivito Uruguayo</span><span class="product-price">$7.00</span></div>
+                        <p class="product-desc">Churrasco res, tocino, queso, huevo estrellado, lechuga, tomate, cebolla, chimichurry. Con papas.</p>
+                        <button class="btn-add" onclick="addToCart('tor-4', 'Chivito Uruguayo', 7.00)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Gringa" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Quesabirria (Gringa)</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">Tortilla de trigo, rellena de carne de birria y queso derretido, cebolla, cilantro y caldo.</p>
+                        <button class="btn-add" onclick="addToCart('gri-1', 'Quesabirria', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Gringa" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Gringas Tradicionales</span><span class="product-price">$4.75</span></div>
+                        <p class="product-desc">Tortilla trigo, queso, casamiento, carne a elección (Res/Pollo/Cerdo), dip ranch y chirmol.</p>
+                        <button class="btn-add" onclick="addToCart('gri-2', 'Gringas', 4.75)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burrito" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Burrito de Birria</span><span class="product-price">$6.50</span></div>
+                        <p class="product-desc">Tortilla trigo, casamiento, aguacate, queso, maíz dulce, carne de birria, chirmol y salsas.</p>
+                        <button class="btn-add" onclick="addToCart('bur-1', 'Burrito de Birria', 6.50)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burrito" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Burrito Tradicional</span><span class="product-price">$4.75</span></div>
+                        <p class="product-desc">Tortilla trigo, casamiento, aguacate, queso, maíz dulce, carne a elección (Res/Pollo/Cerdo), chirmol y salsas.</p>
+                        <button class="btn-add" onclick="addToCart('bur-2', 'Burrito Tradicional', 4.75)">+ Agregar</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Burrito" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Burrito de Camarón</span><span class="product-price">$5.00</span></div>
+                        <p class="product-desc">Tortilla trigo, casamiento, aguacate, queso, maíz dulce, camarón, chirmol y salsas.</p>
+                        <button class="btn-add" onclick="addToCart('bur-3', 'Burrito Camarón', 5.00)">+ Agregar</button>
+                    </div></div>
+                </div>
+            </div>
+
+            <div id="tab-bebidas" class="menu-tab">
+                <div class="menu-grid">
+                    <div class="product-card"><img src="img/food.png" alt="Bebida" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Agua / Café</span><span class="product-price">$1.00</span></div>
+                        <button class="btn-add" onclick="addToCart('beb-1', 'Agua', 1.00)">+ Agregar Agua</button>
+                        <button class="btn-add" style="margin-top:5px" onclick="addToCart('beb-2', 'Café', 1.00)">+ Agregar Café</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Bebida" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Gaseosa / Refrescos</span><span class="product-price">$1.50</span></div>
+                        <p class="product-desc">Vidrio, Naranjada, Limonada rosada o Fruta de estación.</p>
+                        <button class="btn-add" onclick="addToCart('beb-3', 'Gaseosa Vidrio', 1.50)">+ Gaseosa</button>
+                        <button class="btn-add" style="margin-top:5px" onclick="addToCart('beb-4', 'Refresco Natural', 1.50)">+ Refresco</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Bebida" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Bebidas Frozen</span><span class="product-price">$2.50</span></div>
+                        <p class="product-desc">Fruta de estación o de Café.</p>
+                        <button class="btn-add" onclick="addToCart('beb-5', 'Frozen', 2.50)">+ Agregar Frozen</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Bebida" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Especiales & Cerveza</span><span class="product-price">Desde $1.50</span></div>
+                        <button class="btn-add" onclick="addToCart('beb-6', 'Pilsener', 1.50)">+ Pilsener $1.50</button>
+                        <button class="btn-add" style="margin-top:5px" onclick="addToCart('beb-7', 'Birrias Cholas', 2.50)">+ Birrias Cholas $2.50</button>
+                        <button class="btn-add" style="margin-top:5px" onclick="addToCart('beb-8', 'Mix Michelada', 1.50)">+ Mix Miche (sin cerv) $1.50</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Extra" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Papas y Carne Extra</span><span class="product-price">$2.00</span></div>
+                        <button class="btn-add" onclick="addToCart('ext-1', 'Papas Solas', 2.00)">+ Papas Solas</button>
+                        <button class="btn-add" style="margin-top:5px" onclick="addToCart('ext-2', 'Carne Hamburguesa Extra', 2.00)">+ Carne Burger Extra</button>
+                    </div></div>
+                    <div class="product-card"><img src="img/food.png" alt="Extra" class="product-img"><div class="product-info">
+                        <div class="card-header"><span class="product-title">Queso y Guacamole</span><span class="product-price">$0.75</span></div>
+                        <button class="btn-add" onclick="addToCart('ext-3', 'Extra Queso Cheddar', 0.75)">+ Queso Cheddar</button>
+                        <button class="btn-add" style="margin-top:5px" onclick="addToCart('ext-4', 'Extra Guacamole', 0.75)">+ Guacamole</button>
+                    </div></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 <strong>La Abuela Cocina Urbana</strong> · El Salvador.</p>
+    </footer>
+
+    <div id="cart-overlay" class="overlay" onclick="toggleCart()"></div>
+    <aside id="cart-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Tu Pedido</h2>
+            <button class="btn-close" onclick="toggleCart()">✕</button>
+        </div>
+        <div class="sidebar-body">
+            <div id="cart-items" class="cart-items-container"></div>
+            <div id="checkout-form" class="checkout-form">
+                <h3>Datos de Entrega</h3>
+                <label class="form-label" for="client-name">Tu Nombre:</label>
+                <input type="text" id="client-name" class="form-input" placeholder="Ej: Juan Pérez">
+
+                <label class="form-label" for="delivery-method">Método de Entrega:</label>
+                <select id="delivery-method" class="form-input">
+                    <option value="">Seleccione una opción...</option>
+                    <option value="delivery">Delivery</option>
+                    <option value="pickup">Para llevar / Retirar en local</option>
+                    <option value="mesa">Consumo en restaurante (Mesa)</option>
+                </select>
+
+                <label class="form-label" for="location-details">Dirección / Notas:</label>
+                <textarea id="location-details" class="form-input" style="min-height: 60px" placeholder="Si pediste Tacos/Burritos, especifica tu carne (Res, Pollo, Cerdo). Agrega tu dirección o número de mesa..."></textarea>
+
+                <label class="form-label" for="payment-method">Método de Pago:</label>
+                <select id="payment-method" class="form-input" style="margin-bottom: 0;">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Tarjeta">Tarjeta (POS)</option>
+                </select>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <button class="btn-empty" id="btn-empty" onclick="emptyCart()">🗑️ Vaciar carrito</button>
+            <div class="cart-total-row">
+                <span>Total:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="btn-whatsapp" id="btn-whatsapp" onclick="sendWhatsApp()">
+                Confirmar por WhatsApp
+            </button>
+        </div>
+    </aside>
+
+    <script src="app.js"></script>
+</body>
+</html>
