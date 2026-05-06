@@ -1,0 +1,232 @@
+:root {
+    /* Paleta Oscura y Café */
+    --primary: #A65D37;       
+    --primary-dark: #7A4225;
+    --gold: #D4A847;          
+    --gold-light: #F0C870;
+    --bg: #121212;            
+    --bg-card: #1E1E1E;       
+    --bg-header: #0A0A0A;     
+    --text: #F5F5F5;          
+    --text-muted: #A0A0A0;    
+    --border: #333333;        
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.4);
+    --radius: 12px;
+    --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* ── HEADER ── */
+header {
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+}
+
+nav {
+    max-width: 1140px; margin: 0 auto; padding: 0 24px;
+    display: flex; justify-content: space-between; align-items: center; height: 76px;
+}
+
+.logo-container { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+/* NUEVA CLASE PARA LA IMAGEN DEL LOGO */
+.logo-img {
+    height: 48px; /* Mantiene un tamaño proporcional al menú */
+    width: auto;
+    object-fit: contain; /* Evita que la imagen se estire o deforme */
+    border-radius: 50%; /* Opcional: Quítalo si tu logo no es redondo o no quieres que se recorte como círculo */
+}
+
+.logo-text-wrap { display: flex; flex-direction: column; }
+.logo-tag { font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+.logo-name { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--text); line-height: 1.1; }
+.logo-text-wrap { display: flex; flex-direction: column; }
+.logo-tag { font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+.logo-name { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--text); line-height: 1.1; }
+
+.cart-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 50px;
+    cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease;
+}
+.cart-btn:hover { background: var(--primary-dark); }
+.cart-badge { background: var(--bg-header); color: var(--gold); font-size: 0.75rem; font-weight: 700; min-width: 22px; height: 22px; border-radius: 50px; display: flex; align-items: center; justify-content: center; }
+
+/* ── HERO (ACTUALIZADO: Fondo con transición) ── */
+.hero {
+    position: relative;
+    padding: 120px 24px 80px; 
+    text-align: center;
+    /* El gradiente empieza transparente, luego se oscurece y finalmente se funde con el color de fondo --bg (#121212) */
+    /* Busca esta línea en .hero y ponle img/ */
+background: linear-gradient(to bottom, rgba(18, 18, 18, 0.3) 0%, rgba(18, 18, 18, 0.8) 75%, rgba(18, 18, 18, 1) 100%), url('img/burguer.WEBP') center/cover no-repeat;
+    min-height: 65vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Alinea el texto hacia abajo */
+}
+.hero-content { max-width: 700px; margin: 0 auto; z-index: 2; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); color: var(--gold); margin-bottom: 10px; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
+.hero p { color: var(--text); font-size: 1.15rem; margin-bottom: 25px; text-shadow: 1px 1px 4px rgba(0,0,0,0.8); }
+
+/* ── EVENTOS (ACTUALIZADO: Layout dividido texto/imagen) ── */
+.events-section {
+    background: var(--primary-dark);
+    color: #fff;
+    padding: 60px 24px;
+    border-bottom: 1px solid var(--border);
+}
+.events-content { 
+    max-width: 1000px; 
+    margin: 0 auto; 
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+.events-text {
+    flex: 1;
+    text-align: left;
+}
+.events-text h2 { font-family: 'Playfair Display', serif; color: var(--gold-light); font-size: 2.2rem; margin-bottom: 15px; }
+.events-text p { font-size: 1.05rem; margin-bottom: 20px; line-height: 1.7; color: rgba(255,255,255,0.9); }
+.events-text h3 { font-size: 1.2rem; margin-bottom: 25px; font-weight: 600; }
+.btn-event {
+    background: var(--gold); color: var(--bg-header); font-weight: 700; font-size: 1.1rem;
+    padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer; transition: transform 0.2s, background 0.2s;
+}
+.btn-event:hover { transform: scale(1.05); background: var(--gold-light); }
+.events-image {
+    flex: 1;
+}
+.events-image img {
+    width: 100%;
+    max-height: 350px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 2px solid rgba(212, 168, 71, 0.2); /* Borde sutil dorado */
+}
+
+/* ── ENCABEZADO DEL MENÚ (NUEVO) ── */
+.menu-header {
+    text-align: center;
+    padding: 60px 24px 20px;
+    background: var(--bg);
+}
+.menu-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: var(--text);
+    letter-spacing: 2px;
+}
+
+/* ── SISTEMA DE PESTAÑAS (TABS) ── */
+.category-tabs {
+    display: flex; overflow-x: auto; white-space: nowrap; background: var(--bg-card);
+    padding: 15px 24px; position: sticky; top: 76px; z-index: 99; border-bottom: 1px solid var(--border); scrollbar-width: none;
+}
+.category-tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+    background: transparent; color: var(--text-muted); border: none; font-size: 0.95rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* Ocultar pestañas no activas */
+.menu-tab { display: none; animation: fadeIn 0.4s; }
+.menu-tab.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── MENU GRID & CARDS ── */
+.menu-wrapper { max-width: 1140px; margin: 0 auto; padding: 40px 24px; }
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+
+.product-card {
+    background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.2s;
+}
+.product-card:hover { transform: translateY(-4px); border-color: var(--primary); }
+
+.product-img { width: 100%; height: 200px; object-fit: cover; }
+.product-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.product-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--text); font-weight: 700; width: 75%; line-height: 1.2; }
+.product-price { font-size: 1.15rem; color: var(--gold); font-weight: 700; }
+.product-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; flex-grow: 1; }
+
+.btn-add {
+    width: 100%; background: transparent; color: var(--gold); border: 1px solid var(--border);
+    padding: 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s;
+}
+.btn-add:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ── SIDEBAR CART ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); visibility: hidden; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
+.overlay.active { visibility: visible; opacity: 1; }
+
+.sidebar {
+    position: fixed; top: 0; right: -460px; width: 100%; max-width: 420px; height: 100dvh;
+    background: var(--bg-card); z-index: 1001; display: flex; flex-direction: column;
+    transition: right 0.35s ease; border-left: 1px solid var(--border);
+}
+.sidebar.active { right: 0; }
+
+.sidebar-header { padding: 20px; background: var(--bg-header); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.sidebar-header h2 { font-family: 'Playfair Display', serif; color: var(--gold); }
+.btn-close { background: transparent; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
+
+.sidebar-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.cart-items-container { padding: 20px; flex-shrink: 0; }
+.cart-item { display: flex; flex-direction: column; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 12px; }
+.cart-item-title { font-weight: 600; font-size: 0.95rem; }
+.cart-item-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.qty-controls { display: flex; align-items: center; gap: 5px; }
+.qty-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text); width: 28px; height: 28px; border-radius: 4px; cursor: pointer; }
+.qty-btn:hover { background: var(--primary); }
+.item-price { color: var(--gold); font-weight: 700; }
+
+.checkout-form { padding: 20px; border-top: 1px solid var(--border); background: var(--bg-header); }
+.checkout-form h3 { color: var(--primary); margin-bottom: 15px; }
+.form-label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 5px; }
+.form-input { width: 100%; margin-bottom: 15px; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-family: 'Inter', sans-serif; }
+.form-input:focus { border-color: var(--gold); outline: none; }
+
+.cart-footer { padding: 20px; background: var(--bg-header); border-top: 1px solid var(--border); }
+.cart-total-row { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; }
+.btn-whatsapp { width: 100%; background: #25D366; color: #000; border: none; padding: 14px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; gap: 10px; font-size: 1rem; }
+.btn-whatsapp:hover { background: #1EBE5D; }
+.btn-empty { width: 100%; background: transparent; color: #ff5252; border: 1px solid #ff5252; padding: 8px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; }
+
+footer { text-align: center; padding: 30px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; }
+
+/* ── RESPONSIVIDAD (MÓVILES) ── */
+@media (max-width: 768px) {
+    /* Ajustar sección de eventos para que se apile en celulares */
+    .events-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 25px;
+    }
+    .events-text {
+        text-align: center;
+    }
+    
+    /* Reducir tamaño del menú y header en pantallas pequeñas */
+    nav { padding: 0 16px; }
+    .logo-name { font-size: 1.15rem; }
+    .cart-btn { padding: 8px 16px; font-size: 0.85rem; }
+    
+    .menu-header h2 { font-size: 2rem; }
+    .menu-grid { grid-template-columns: 1fr; } /* Tarjetas a 1 columna */
+    
+    .hero { min-height: 50vh; padding-top: 80px; }
+}
