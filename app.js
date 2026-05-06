@@ -136,6 +136,36 @@ async function sendWhatsApp() {
     // Construimos la URL de WhatsApp
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`;
     
+// Versión mejorada de window.open para iOS
+function openWhatsApp(url) {
+    // Detectar iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    if (isIOS) {
+        // Intentar con el esquema directo de WhatsApp primero
+        const phone = "50370483939";
+        const message = url.split('?text=')[1];
+        const directUrl = `whatsapp://send?phone=${phone}&text=${message || ''}`;
+        
+        const startTime = Date.now();
+        window.location.href = directUrl;
+        
+        // Si después de 1 segundo no se abrió, redirigir a la versión web
+        setTimeout(function() {
+            if (Date.now() - startTime < 1500) {
+                window.location.href = url;
+            }
+        }, 1000);
+    } else {
+        window.open(url, '_blank');
+    }
+}
+
+// Luego en sendWhatsApp, reemplazar window.open(url, '_blank'); por:
+// openWhatsApp(url);
+
+
+
     // 2. ABRIMOS WHATSAPP INMEDIATAMENTE, sin esperar al fetch
     // Usamos un pequeño truco: abrir en el mismo evento de clic antes de cualquier operación async
     window.open(url, '_blank');
