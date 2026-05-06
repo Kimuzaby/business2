@@ -116,32 +116,8 @@ async function sendWhatsApp() {
 
     const totalOrder = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
 
-    // 1. Preparar el objeto de datos para Google Sheets
-    const orderData = {
-        id_pedido: Date.now(),
-        fecha: new Date().toLocaleString(),
-        cliente: clientName,
-        items: cart.map(item => `${item.quantity}x ${item.name}`).join(", "),
-        total: totalOrder,
-        metodo_entrega: deliveryMethod,
-        pago: paymentMethod,
-        notas: locationDetails
-    };
-
-    // 2. Enviar a Google Sheets vía SheetDB (Asíncrono)
-    try {
-        await fetch('https://sheetdb.io/api/v1/5r8sg0dmxgzp0', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: [orderData] })
-        });
-        console.log("Pedido registrado en Google Sheets con éxito.");
-    } catch (error) {
-        console.error("Error al registrar en Sheets:", error);
-    }
-
-    // 3. Proceder con el envío de WhatsApp original
-    const phone = "50370483939";
+    // 1. Preparar el mensaje y la URL de WhatsApp INMEDIATAMENTE
+    const phone = "50370483939"; // Asegúrate de que el número incluya el código de país correcto
     
     let messageText = `NUEVO PEDIDO: LA ABUELA COCINA URBANA\n\n`;
     messageText += `Cliente: ${clientName}\n`;
@@ -157,7 +133,31 @@ async function sendWhatsApp() {
     
     messageText += "\n¡Gracias por preferir a La Abuela!";
     
+    // Construimos la URL de WhatsApp
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`;
     
+    // 2. ABRIMOS WHATSAPP INMEDIATAMENTE, sin esperar al fetch
+    // Usamos un pequeño truco: abrir en el mismo evento de clic antes de cualquier operación async
     window.open(url, '_blank');
-} // ← Esta llave de cierre faltaba
+
+    // 3. AHORA SÍ, enviamos a Google Sheets en segundo plano (sin bloquear la UI)
+    const orderData = {
+        id_pedido: Date.now(),
+        fecha: new Date().toLocaleString(),
+        cliente: clientName,
+        items: cart.map(item => `${item.quantity}x ${item.name}`).join(", "),
+        total: totalOrder,
+        metodo_entrega: deliveryMethod,
+        pago: paymentMethod,
+        notas: locationDetails
+    };
+
+    // Enviamos a Google Sheets sin esperar respuesta ni bloquear
+    fetch('https://sheetdb.io/api/v1/5r8sg0dmxgzp0', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [orderData] })
+    }).catch(error => {
+        console.error("Error al registrar en Sheets (no crítico):", error);
+    });
+}
