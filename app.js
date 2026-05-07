@@ -275,85 +275,137 @@ async function sendWhatsApp() {
 
 let map = null;
 let marker = null;
-let selectedLat = 13.698;  // Coordenada por defecto (San Salvador)
-let selectedLng = -89.102; // Coordenada por defecto (Ilopango/Soyapango aprox)
+let selectedLat = 13.698;
+let selectedLng = -89.102;
 
 function openMapModal() {
     document.getElementById('map-modal').style.display = 'block';
     document.getElementById('map-overlay').classList.add('active');
+    
+    // Bloquear el scroll del body cuando el mapa está abierto en móvil
+    document.body.style.overflow = 'hidden';
 
     if (!map) {
-        // 1. Inicializamos el mapa
-        map = L.map('delivery-map').setView([selectedLat, selectedLng], 14);
+        map = L.map('delivery-map', {
+            zoomControl: true,
+            attributionControl: false
+        }).setView([selectedLat, selectedLng], 14);
 
-        // 2. Capa visual de OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // 3. Marcador arrastrable
-        marker = L.marker([selectedLat, selectedLng], { draggable: true }).addTo(map);
+        // Marcador arrastrable con icono más visible para móviles
+        const customIcon = L.icon({
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
+
+        marker = L.marker([selectedLat, selectedLng], { 
+            draggable: true,
+            icon: customIcon 
+        }).addTo(map);
 
         marker.on('dragend', function (e) {
             selectedLat = marker.getLatLng().lat;
             selectedLng = marker.getLatLng().lng;
         });
 
-        // 4. AGREGAMOS EL BUSCADOR DE DIRECCIONES (Geocoder)
+        // Click en el mapa para mover el marcador (útil en móviles)
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            selectedLat = e.latlng.lat;
+            selectedLng = e.latlng.lng;
+        });
+
+        // Buscador de direcciones
         const geocoder = L.Control.geocoder({
-            defaultMarkGeocode: false, // Evitamos que ponga su propio marcador feo
-            placeholder: "Buscar colonia, calle, lugar...",
-            errorMessage: "No se encontró el lugar."
+            defaultMarkGeocode: false,
+            placeholder: "🔍 Buscar dirección...",
+            errorMessage: "No se encontró el lugar.",
+            collapsed: false // Siempre visible en móviles
         })
         .on('markgeocode', function(e) {
-            // Cuando el usuario elige un resultado de la búsqueda:
-            const bbox = e.geocode.bbox;
             const center = e.geocode.center;
             
-            // Movemos el mapa y nuestro marcador rojo al nuevo lugar
-            map.fitBounds(bbox);
+            map.setView(center, 16);
             marker.setLatLng(center);
             
-            // Actualizamos las coordenadas
             selectedLat = center.lat;
             selectedLng = center.lng;
         })
         .addTo(map);
 
     } else {
-        // Redibujar el mapa si ya estaba abierto
-        setTimeout(() => { map.invalidateSize(); }, 100);
+        // Redibujar el mapa cuando se abre de nuevo
+        setTimeout(() => { 
+            map.invalidateSize();
+            // Centrar en la última ubicación seleccionada
+            map.setView([selectedLat, selectedLng], 14);
+            marker.setLatLng([selectedLat, selectedLng]);
+        }, 200);
     }
 }
 
 function closeMapModal() {
     document.getElementById('map-modal').style.display = 'none';
     document.getElementById('map-overlay').classList.remove('active');
+    document.body.style.overflow = ''; // Restaurar scroll
 }
 
-// 5. FUNCIÓN PARA BUSCAR LA UBICACIÓN POR GPS
 function findMyLocation() {
     if (!map) return;
     
-    // Mostramos estado de carga en el botón
     const btn = event.currentTarget;
     const originalText = btn.innerHTML;
-    btn.innerHTML = "⏳ Buscando...";
+    btn.innerHTML = "⏳ Buscando tu ubicación...";
     btn.disabled = true;
 
-    map.locate({setView: true, maxZoom: 16});
+    // Opciones específicas para mejor funcionamiento en móviles
+    const options = {
+        enableHighAccuracy: true, // Mayor precisión GPS
+        timeout: 10000,           // 10 segundos máximo
+        maximumAge: 0,            // No usar caché
+        setView: true,
+        maxZoom: 18
+    };
+
+    map.locate(options);
     
     map.once('locationfound', function(e) {
         selectedLat = e.latlng.lat;
         selectedLng = e.latlng.lng;
         marker.setLatLng(e.latlng);
         
-        btn.innerHTML = "✅ ¡Ubicación encontrada!";
-        setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+        // Popup temporal para mostrar la ubicación encontrada
+        L.popup()
+            .setLatLng(e.latlng)
+            .setContent('📍 ¡Ubicación encontrada!<br>Puedes ajustar el marcador')
+            .openOn(map);
+        
+        btn.innerHTML = "✅ ¡Listo!";
+        setTimeout(() => { 
+            btn.innerHTML = originalText; 
+            btn.disabled = false; 
+        }, 2500);
     });
 
     map.once('locationerror', function(e) {
-        alert("No se pudo obtener la ubicación. Por favor, asegúrate de tener el GPS encendido o busca manualmente.");
+        let errorMsg = "No se pudo obtener tu ubicación.";
+        
+        if (e.code === 1) {
+            errorMsg += "\n\n⚠️ Permiso denegado. Verifica que:\n• El GPS esté activado\n• Hayas dado permiso de ubicación\n• No estés en modo incógnito";
+        } else if (e.code === 2) {
+            errorMsg += "\n\n⚠️ Ubicación no disponible. Intenta buscar manualmente.";
+        } else if (e.code === 3) {
+            errorMsg += "\n\n⚠️ Tiempo agotado. Intenta de nuevo.";
+        }
+        
+        alert(errorMsg);
         btn.innerHTML = originalText;
         btn.disabled = false;
     });
@@ -368,8 +420,18 @@ function confirmMapLocation() {
     const notesField = document.getElementById('location-details');
     let currentNotes = notesField.value;
     
-    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]/g, '').trim();
+    // Limpiar etiqueta anterior si existe
+    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
+    
+    // Agregar nueva etiqueta
     notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
+    
+    // Feedback visual breve
+    const confirmBtn = event.currentTarget;
+    confirmBtn.textContent = "✅ ¡Ubicación confirmada!";
+    setTimeout(() => {
+        confirmBtn.textContent = "Confirmar esta ubicación";
+    }, 1500);
     
     closeMapModal();
 }

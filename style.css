@@ -462,3 +462,70 @@ footer { text-align: center; padding: 30px; border-top: 1px solid var(--border);
     
     .hero { min-height: 50vh; padding-top: 80px; }
 }
+
+/* ==========================================
+   ESTILOS PARA EL MAPA Y MODAL EN MÓVILES
+   ========================================== */
+
+#map-modal {
+    width: 95% !important;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px !important;
+}
+
+#delivery-map {
+    height: 300px !important;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    z-index: 1;
+}
+
+/* En pantallas pequeñas, ajustamos altura del mapa */
+@media (max-width: 600px) {
+    #delivery-map {
+        height: 250px !important;
+    }
+    
+    #map-modal {
+        padding: 15px !important;
+    }
+    
+    #map-modal h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    #map-modal p {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Aseguramos que Leaflet funcione bien */
+.leaflet-container {
+    font-family: 'Inter', sans-serif !important;
+    z-index: 1 !important;
+}
+
+.leaflet-control-geocoder {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.leaflet-control-geocoder input {
+    width: 100% !important;
+    padding: 10px !important;
+    font-size: 16px !important; /* Evita zoom en iOS */
+    border-radius: 6px !important;
+}
+
+/* Overlay del mapa */
+#map-overlay {
+    z-index: 1999 !important;
+}
+
+/* Botón de ubicación mejorado */
+#map-modal button {
+    touch-action: manipulation; /* Mejor respuesta táctil */
+    -webkit-tap-highlight-color: transparent;
+}
