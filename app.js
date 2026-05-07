@@ -281,11 +281,18 @@ let mapInitialized = false;
 function initMap() {
     console.log("Google Maps API cargada correctamente");
     isMapApiLoaded = true;
+    console.log("isMapApiLoaded:", isMapApiLoaded);
 }
 
 function openMapModal() {
+    console.log("Abriendo modal del mapa");
     const modal = document.getElementById('map-modal');
     const overlay = document.getElementById('map-overlay');
+    
+    if (!modal) {
+        console.error("No se encontró el modal del mapa");
+        return;
+    }
     
     modal.style.display = 'block';
     overlay.classList.add('active');
@@ -294,103 +301,128 @@ function openMapModal() {
     setTimeout(() => {
         if (!isMapApiLoaded) {
             alert("El mapa aún está cargando. Por favor, espera unos segundos e inténtalo de nuevo.");
+            closeMapModal();
             return;
         }
 
         const mapContainer = document.getElementById("delivery-map");
+        if (!mapContainer) {
+            console.error("No se encontró el contenedor del mapa");
+            return;
+        }
+        
+        console.log("Contenedor del mapa visible:", mapContainer.offsetWidth + "x" + mapContainer.offsetHeight);
         
         if (!mapInitialized) {
             console.log("Inicializando mapa por primera vez");
             
-            // Crear el mapa
-            map = new google.maps.Map(mapContainer, {
-                center: { lat: selectedLat, lng: selectedLng },
-                zoom: 15,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false
-            });
-
-            // Crear el marcador
-            marker = new google.maps.Marker({
-                position: { lat: selectedLat, lng: selectedLng },
-                map: map,
-                draggable: true,
-                animation: google.maps.Animation.DROP
-            });
-
-            // Evento cuando se arrastra el marcador
-            marker.addListener("dragend", () => {
-                const position = marker.getPosition();
-                selectedLat = position.lat();
-                selectedLng = position.lng();
-                console.log("Marcador arrastrado a:", selectedLat, selectedLng);
-            });
-
-            // Permitir clic en el mapa para mover el marcador
-            map.addListener("click", (mapsMouseEvent) => {
-                const position = mapsMouseEvent.latLng;
-                marker.setPosition(position);
-                selectedLat = position.lat();
-                selectedLng = position.lng();
-                console.log("Mapa clickeado en:", selectedLat, selectedLng);
-            });
-
-            // Configurar el autocomplete
-            const input = document.getElementById("pac-input");
-            if (input) {
-                const autocomplete = new google.maps.places.Autocomplete(input);
-                autocomplete.setComponentRestrictions({ country: ["sv"] });
-                autocomplete.bindTo("bounds", map);
-
-                autocomplete.addListener("place_changed", () => {
-                    const place = autocomplete.getPlace();
-                    if (!place.geometry || !place.geometry.location) {
-                        alert("No se encontró información para este lugar.");
-                        return;
-                    }
-
-                    if (place.geometry.viewport) {
-                        map.fitBounds(place.geometry.viewport);
-                    } else {
-                        map.setCenter(place.geometry.location);
-                        map.setZoom(17);
-                    }
-                    
-                    marker.setPosition(place.geometry.location);
-                    selectedLat = place.geometry.location.lat();
-                    selectedLng = place.geometry.location.lng();
-                    console.log("Lugar seleccionado:", selectedLat, selectedLng);
+            try {
+                // Crear el mapa
+                map = new google.maps.Map(mapContainer, {
+                    center: { lat: selectedLat, lng: selectedLng },
+                    zoom: 15,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false
                 });
+
+                // Crear el marcador
+                marker = new google.maps.Marker({
+                    position: { lat: selectedLat, lng: selectedLng },
+                    map: map,
+                    draggable: true,
+                    animation: google.maps.Animation.DROP
+                });
+
+                // Evento cuando se arrastra el marcador
+                marker.addListener("dragend", () => {
+                    const position = marker.getPosition();
+                    selectedLat = position.lat();
+                    selectedLng = position.lng();
+                    console.log("Marcador arrastrado a:", selectedLat, selectedLng);
+                });
+
+                // Permitir clic en el mapa para mover el marcador
+                map.addListener("click", (mapsMouseEvent) => {
+                    const position = mapsMouseEvent.latLng;
+                    marker.setPosition(position);
+                    selectedLat = position.lat();
+                    selectedLng = position.lng();
+                    console.log("Mapa clickeado en:", selectedLat, selectedLng);
+                });
+
+                // Configurar el autocomplete
+                const input = document.getElementById("pac-input");
+                if (input && google.maps.places) {
+                    const autocomplete = new google.maps.places.Autocomplete(input, {
+                        componentRestrictions: { country: ["sv"] }
+                    });
+                    autocomplete.bindTo("bounds", map);
+
+                    autocomplete.addListener("place_changed", () => {
+                        const place = autocomplete.getPlace();
+                        if (!place.geometry || !place.geometry.location) {
+                            alert("No se encontró información para este lugar.");
+                            return;
+                        }
+
+                        if (place.geometry.viewport) {
+                            map.fitBounds(place.geometry.viewport);
+                        } else {
+                            map.setCenter(place.geometry.location);
+                            map.setZoom(17);
+                        }
+                        
+                        marker.setPosition(place.geometry.location);
+                        selectedLat = place.geometry.location.lat();
+                        selectedLng = place.geometry.location.lng();
+                        console.log("Lugar seleccionado:", selectedLat, selectedLng);
+                    });
+                }
+                
+                mapInitialized = true;
+                console.log("Mapa inicializado correctamente");
+                
+                // Forzar resize después de la inicialización
+                setTimeout(() => {
+                    google.maps.event.trigger(map, 'resize');
+                    map.setCenter({ lat: selectedLat, lng: selectedLng });
+                }, 100);
+                
+            } catch (error) {
+                console.error("Error al inicializar el mapa:", error);
+                alert("Error al cargar el mapa. Por favor, recarga la página.");
+                closeMapModal();
             }
-            
-            mapInitialized = true;
         } else {
-            // Si el mapa ya existe, solo redimensionarlo y centrarlo
+            // Si el mapa ya existe, redimensionarlo y centrarlo
             console.log("Redimensionando mapa existente");
             google.maps.event.trigger(map, 'resize');
-            map.setCenter({ lat: selectedLat, lng: selectedLng });
-            marker.setPosition({ lat: selectedLat, lng: selectedLng });
+            
+            // Centrar el mapa con un pequeño retraso
+            setTimeout(() => {
+                map.setCenter({ lat: selectedLat, lng: selectedLng });
+                marker.setPosition({ lat: selectedLat, lng: selectedLng });
+            }, 100);
         }
-        
-        // Forzar un resize adicional después de un breve momento
-        setTimeout(() => {
-            if (map) {
-                google.maps.event.trigger(map, 'resize');
-            }
-        }, 200);
         
     }, 300);
 }
 
 function closeMapModal() {
-    document.getElementById('map-modal').style.display = 'none';
-    document.getElementById('map-overlay').classList.remove('active');
+    console.log("Cerrando modal del mapa");
+    const modal = document.getElementById('map-modal');
+    const overlay = document.getElementById('map-overlay');
+    
+    if (modal) modal.style.display = 'none';
+    if (overlay) overlay.classList.remove('active');
 }
 
-// 5. Geolocalización por GPS
+// Geolocalización por GPS
 function findMyLocation(event) {
-    // Prevenir que el evento se propague
+    console.log("Función findMyLocation llamada");
+    
+    // Manejar el evento correctamente
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -401,13 +433,14 @@ function findMyLocation(event) {
     if (event && event.currentTarget) {
         btn = event.currentTarget;
     } else {
-        // Fallback: buscar el botón por el texto
+        // Fallback: buscar el botón por su contenido
         const buttons = document.querySelectorAll('#map-modal button');
-        buttons.forEach(button => {
+        for (let button of buttons) {
             if (button.textContent.includes('Usar mi ubicación')) {
                 btn = button;
+                break;
             }
-        });
+        }
     }
     
     if (!btn) {
@@ -419,8 +452,9 @@ function findMyLocation(event) {
     btn.innerHTML = "⏳ Buscando...";
     btn.disabled = true;
 
+    // Verificar si el navegador soporta geolocalización
     if (!navigator.geolocation) {
-        alert("Tu dispositivo no soporta geolocalización.");
+        alert("Tu navegador no soporta geolocalización. Usa un navegador moderno como Chrome, Firefox o Edge.");
         btn.innerHTML = originalText;
         btn.disabled = false;
         return;
@@ -428,16 +462,18 @@ function findMyLocation(event) {
 
     // Verificar si el mapa está inicializado
     if (!map || !marker) {
-        alert("El mapa no está listo. Espera un momento e inténtalo de nuevo.");
+        alert("El mapa no está listo aún. Espera un momento e inténtalo de nuevo.");
         btn.innerHTML = originalText;
         btn.disabled = false;
         return;
     }
 
+    console.log("Solicitando ubicación GPS...");
+
     const options = {
         enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 60000 // Permitir ubicación de hasta 1 minuto
+        maximumAge: 60000 // Permitir ubicación cacheada de hasta 1 minuto
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -452,6 +488,9 @@ function findMyLocation(event) {
             map.setZoom(17);
             marker.setPosition(pos);
             
+            // Forzar un redimensionamiento
+            google.maps.event.trigger(map, 'resize');
+            
             btn.innerHTML = "✅ ¡Ubicación encontrada!";
             setTimeout(() => { 
                 btn.innerHTML = originalText; 
@@ -459,21 +498,22 @@ function findMyLocation(event) {
             }, 2000);
         },
         (error) => {
+            console.error("Error de geolocalización:", error);
             let mensajeError = "No se pudo obtener tu ubicación. ";
+            
             switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    mensajeError = "Permiso de ubicación denegado. Activa el GPS en tu navegador.";
+                case 1: // PERMISSION_DENIED
+                    mensajeError = "Permiso de ubicación denegado.\n\nPara activarlo:\n• Chrome/Firefox: Clic en el ícono 🔒 en la barra de direcciones\n• Activa 'Ubicación' y recarga la página";
                     break;
-                case error.POSITION_UNAVAILABLE:
-                    mensajeError = "Señal GPS no disponible. Verifica que el GPS esté activado.";
+                case 2: // POSITION_UNAVAILABLE
+                    mensajeError = "Señal GPS no disponible. Verifica que el GPS de tu dispositivo esté activado.";
                     break;
-                case error.TIMEOUT:
-                    mensajeError = "Tiempo agotado. Intenta en un área con mejor señal GPS.";
+                case 3: // TIMEOUT
+                    mensajeError = "Tiempo de búsqueda agotado. Intenta en un área con mejor señal.";
                     break;
             }
             
             alert(mensajeError);
-            console.error("Error de geolocalización:", error);
             btn.innerHTML = originalText;
             btn.disabled = false;
         },
@@ -481,24 +521,31 @@ function findMyLocation(event) {
     );
 }
 
-// 6. Confirmar ubicación
+// Confirmar ubicación
 function confirmMapLocation() {
+    console.log("Confirmando ubicación");
+    
     if (!selectedLat || !selectedLng) {
         alert("Primero selecciona una ubicación en el mapa.");
         return;
     }
     
     const googleMapsLink = `https://www.google.com/maps?q=${selectedLat},${selectedLng}`;
+    console.log("Link generado:", googleMapsLink);
     
-    document.getElementById('map-coordinates').value = googleMapsLink;
+    const mapCoordsInput = document.getElementById('map-coordinates');
+    if (mapCoordsInput) {
+        mapCoordsInput.value = googleMapsLink;
+    }
     
     const notesField = document.getElementById('location-details');
-    let currentNotes = notesField.value || '';
-    
-    // Limpiar ubicaciones anteriores
-    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
-    // Agregar la nueva ubicación
-    notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
+    if (notesField) {
+        let currentNotes = notesField.value || '';
+        // Limpiar ubicaciones anteriores
+        currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
+        // Agregar la nueva ubicación
+        notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
+    }
     
     closeMapModal();
     alert("¡Ubicación guardada con éxito!");
