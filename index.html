@@ -355,14 +355,15 @@
                     </select>
                 </div>
 
-                <label class="form-label" for="location-details">Dirección / Notas:</label>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <button type="button" onclick="openMapModal()" style="background: var(--bg); color: var(--gold); border: 1px solid var(--gold); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                        📍 Seleccionar ubicación exacta
+                <div id="map-button-container" style="display: none; margin-bottom: 15px;">
+                    <button type="button" onclick="openMapModal()" style="background: var(--bg); color: var(--gold); border: 1px solid var(--gold); padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                        📍 Seleccionar ubicación exacta en el mapa
                     </button>
                     <input type="hidden" id="map-coordinates" value="">
                 </div>
-                <textarea id="location-details" class="form-input" style="min-height: 60px" placeholder="Si pediste Tacos/Burritos, especifica tu carne. Escribe tu dirección o usa el botón de arriba para fijarla en el mapa..."></textarea>
+
+                <label class="form-label" for="location-details">Dirección / Notas del pedido:</label>
+                <textarea id="location-details" class="form-input" style="min-height: 60px" placeholder="Escribe aquí tu dirección (si es delivery), tu número de mesa, o notas para tu pedido (ej. sin cebolla)..."></textarea>
                 <label class="form-label" for="payment-method">Método de Pago:</label>
                 <select id="payment-method" class="form-input" style="margin-bottom: 0;">
                     <option value="Efectivo">Efectivo</option>

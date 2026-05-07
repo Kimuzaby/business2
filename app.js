@@ -35,13 +35,26 @@ function toggleCart() {
 function toggleDeliveryZones() {
     const method = document.getElementById('delivery-method').value;
     const zonesContainer = document.getElementById('delivery-zones-container');
+    const mapButtonContainer = document.getElementById('map-button-container'); // Contenedor del mapa
     const deliveryZone = document.getElementById('delivery-zone');
+    const mapCoords = document.getElementById('map-coordinates');
     
     if (method === 'delivery') {
         zonesContainer.style.display = 'block';
+        mapButtonContainer.style.display = 'block'; // Muestra el botón del mapa
     } else {
         zonesContainer.style.display = 'none';
-        deliveryZone.value = ''; // Resetea el valor si cambia de método
+        mapButtonContainer.style.display = 'none';  // Oculta el botón del mapa
+        
+        // Resetea los valores si el usuario cambió de opinión
+        deliveryZone.value = ''; 
+        if (mapCoords) mapCoords.value = ''; 
+        
+        // Limpiamos el texto del mapa en las notas si existía
+        const notesField = document.getElementById('location-details');
+        if (notesField) {
+            notesField.value = notesField.value.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
+        }
     }
     saveAndRenderCart(); // Recalcula el total si cambió el método de entrega
 }
@@ -70,7 +83,9 @@ function emptyCart() {
         document.getElementById('delivery-method').value = '';
         document.getElementById('delivery-zone').value = '';
         document.getElementById('location-details').value = '';
-        toggleDeliveryZones(); // Asegurarnos de que el desplegable se oculte al vaciar
+        if (document.getElementById('map-coordinates')) document.getElementById('map-coordinates').value = '';
+        
+        toggleDeliveryZones(); // Asegurarnos de que los desplegables y mapas se oculten al vaciar
         saveAndRenderCart();
     }
 }
