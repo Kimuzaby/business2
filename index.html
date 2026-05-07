@@ -9,14 +9,6 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
-    
 </head>
 <body>
 
@@ -400,7 +392,7 @@
 
         <input id="pac-input" class="form-input" type="text" placeholder="Buscar dirección, colonia o referencia..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;" />
 
-        <button onclick="findMyLocation()" style="width: 100%; background: var(--bg); border: 1px solid var(--primary); color: var(--primary); padding: 8px; border-radius: 6px; cursor: pointer; margin-bottom: 15px; font-weight: 600;">
+        <button onclick="findMyLocation(event)" style="width: 100%; background: var(--bg); border: 1px solid var(--primary); color: var(--primary); padding: 8px; border-radius: 6px; cursor: pointer; margin-bottom: 15px; font-weight: 600;">
             🎯 Usar mi ubicación actual
         </button>
 
