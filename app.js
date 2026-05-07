@@ -31,32 +31,30 @@ function toggleCart() {
     cartOverlay.classList.toggle('active');
 }
 
-// 1. NUEVA FUNCIÓN: Muestra u oculta la selección de zonas
+// Muestra u oculta la selección de zonas y el mapa
 function toggleDeliveryZones() {
     const method = document.getElementById('delivery-method').value;
     const zonesContainer = document.getElementById('delivery-zones-container');
-    const mapButtonContainer = document.getElementById('map-button-container'); // Contenedor del mapa
+    const mapButtonContainer = document.getElementById('map-button-container'); 
     const deliveryZone = document.getElementById('delivery-zone');
     const mapCoords = document.getElementById('map-coordinates');
     
     if (method === 'delivery') {
         zonesContainer.style.display = 'block';
-        mapButtonContainer.style.display = 'block'; // Muestra el botón del mapa
+        mapButtonContainer.style.display = 'block'; 
     } else {
         zonesContainer.style.display = 'none';
-        mapButtonContainer.style.display = 'none';  // Oculta el botón del mapa
+        mapButtonContainer.style.display = 'none';  
         
-        // Resetea los valores si el usuario cambió de opinión
         deliveryZone.value = ''; 
         if (mapCoords) mapCoords.value = ''; 
         
-        // Limpiamos el texto del mapa en las notas si existía
         const notesField = document.getElementById('location-details');
         if (notesField) {
             notesField.value = notesField.value.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
         }
     }
-    saveAndRenderCart(); // Recalcula el total si cambió el método de entrega
+    saveAndRenderCart(); 
 }
 
 function addToCart(id, name, price) {
@@ -85,12 +83,11 @@ function emptyCart() {
         document.getElementById('location-details').value = '';
         if (document.getElementById('map-coordinates')) document.getElementById('map-coordinates').value = '';
         
-        toggleDeliveryZones(); // Asegurarnos de que los desplegables y mapas se oculten al vaciar
+        toggleDeliveryZones(); 
         saveAndRenderCart();
     }
 }
 
-// 2. LÓGICA DE COBRO: Calcular los $3.00 si se selecciona delivery
 function saveAndRenderCart() {
     localStorage.setItem('cart_la_abuela', JSON.stringify(cart));
     cartItemsContainer.innerHTML = '';
@@ -129,7 +126,6 @@ function saveAndRenderCart() {
                 </div>`;
         });
 
-        // Verificamos si aplica el cobro de envío ($3.00)
         const deliveryMethod = document.getElementById('delivery-method');
         const deliveryZone = document.getElementById('delivery-zone');
         let deliveryCost = 0;
@@ -140,7 +136,6 @@ function saveAndRenderCart() {
 
         const finalTotal = total + deliveryCost;
 
-        // Si hay costo de envío, mostramos el desglose en el carrito
         if (deliveryCost > 0) {
             cartTotalElement.innerHTML = `
                 <div style="display: flex; flex-direction: column; text-align: right;">
@@ -157,7 +152,6 @@ function saveAndRenderCart() {
     cartCountElement.innerText = totalItems;
 }
 
-// 3. ENVÍO DE WHATSAPP ACTUALIZADO
 async function sendWhatsApp() {
     const clientName = document.getElementById('client-name').value;
     const deliveryMethod = document.getElementById('delivery-method').value;
@@ -165,7 +159,6 @@ async function sendWhatsApp() {
     const locationDetails = document.getElementById('location-details').value;
     const paymentMethod = document.getElementById('payment-method').value;
 
-    // Validación básica de campos, ahora incluyendo la zona si se elige delivery
     if (cart.length === 0 || !clientName || !deliveryMethod) {
         alert("Por favor completa tu nombre y el método de entrega.");
         return;
@@ -176,55 +169,48 @@ async function sendWhatsApp() {
         return;
     }
 
-    // Cálculos de subtotal y envío
     const subtotalOrder = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryCost = (deliveryMethod === 'delivery' && deliveryZone !== '') ? 3.00 : 0;
     const totalOrder = (subtotalOrder + deliveryCost).toFixed(2);
 
     const phone = "50370483939"; 
     
-    let messageText = `NUEVO PEDIDO: LA ABUELA COCINA URBANA\n\n`;
-    messageText += `Cliente: ${clientName}\n`;
+    let messageText = `*NUEVO PEDIDO: LA ABUELA COCINA URBANA* 🍔\n\n`;
+    messageText += `*Cliente:* ${clientName}\n`;
     
     if (deliveryMethod === 'delivery') {
-        messageText += `Modalidad: Delivery (${deliveryZone})\n\n`;
+        messageText += `*Modalidad:* Delivery (${deliveryZone})\n\n`;
     } else {
-        messageText += `Modalidad: ${deliveryMethod}\n\n`;
+        messageText += `*Modalidad:* ${deliveryMethod}\n\n`;
     }
     
     cart.forEach(item => {
         messageText += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
 
-    
     if (deliveryCost > 0) {
-        messageText += `\nSubtotal: $${subtotalOrder.toFixed(2)}\n`;
-        messageText += `Costo de envío: $${deliveryCost.toFixed(2)}\n`;
+        messageText += `\n*Subtotal:* $${subtotalOrder.toFixed(2)}\n`;
+        messageText += `*Costo de envío:* $${deliveryCost.toFixed(2)}\n`;
     }
 
-    messageText += `\nTOTAL A PAGAR: $${totalOrder}\n`;
-    messageText += `Pago: ${paymentMethod}\n`;
+    messageText += `\n*TOTAL A PAGAR: $${totalOrder}*\n`;
+    messageText += `*Pago:* ${paymentMethod}\n`;
     
     if (locationDetails) {
-        // Limpiamos la etiqueta visual que le pusimos al cliente
         let cleanNotes = locationDetails.replace('[📍 Ubicación fijada en mapa]', '').trim();
-        messageText += `Notas: ${cleanNotes}\n`;
+        messageText += `*Notas:* ${cleanNotes}\n`;
     }
 
     // AÑADIMOS EL ENLACE DEL MAPA SI EXISTE
-    const mapCoords = document.getElementById('map-coordinates').value;
-    if (deliveryMethod === 'delivery' && mapCoords) {
-        messageText += `📍 Ver ubicación exacta en el mapa: \n${mapCoords}\n`;
+    const mapCoords = document.getElementById('map-coordinates');
+    if (deliveryMethod === 'delivery' && mapCoords && mapCoords.value !== '') {
+        messageText += `*📍 Ver ubicación exacta en el mapa:* \n${mapCoords.value}\n`;
     }
     
     messageText += "\n¡Gracias por preferir a La Abuela!";
     
-    // Construimos la URL de WhatsApp
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`;
     
-    // ... (el resto del código de iOS y el fetch se mantiene igual) ...
-    
-    // Versión mejorada de window.open para iOS
     function openWhatsApp(url) {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         
@@ -248,7 +234,7 @@ async function sendWhatsApp() {
 
     openWhatsApp(url);
 
-    // Registro asíncrono a Google Sheets en segundo plano
+    // Registro en Google Sheets
     const orderData = {
         id_pedido: Date.now(),
         fecha: new Date().toLocaleString(),
@@ -265,82 +251,59 @@ async function sendWhatsApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: [orderData] })
     }).catch(error => {
-        console.error("Error al registrar en Sheets (no crítico):", error);
+        console.error("Error al registrar en Sheets:", error);
     });
 }
 
 // ==========================================
-// LÓGICA DEL MAPA (API OFICIAL DE GOOGLE MAPS)
+// LÓGICA DEL MAPA HÍBRIDO (Leaflet -> Google Maps)
 // ==========================================
 
 let map = null;
 let marker = null;
-let selectedLat = 13.6929;  // Coordenada por defecto (San Salvador)
-let selectedLng = -89.2182; // Coordenada por defecto
-let isMapApiLoaded = false;
-
-// Esta función es llamada automáticamente por el script de Google al terminar de cargar
-function initMap() {
-    isMapApiLoaded = true;
-}
+let selectedLat = 13.698;  // Coordenada por defecto (San Salvador)
+let selectedLng = -89.102; // Coordenada por defecto (Ilopango/Soyapango aprox)
 
 function openMapModal() {
     document.getElementById('map-modal').style.display = 'block';
     document.getElementById('map-overlay').classList.add('active');
 
-    if (isMapApiLoaded && !map) {
-        // 1. Crear el mapa
-        map = new google.maps.Map(document.getElementById("delivery-map"), {
-            center: { lat: selectedLat, lng: selectedLng },
-            zoom: 15,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false
+    if (!map) {
+        // Inicializamos el mapa con Leaflet
+        map = L.map('delivery-map').setView([selectedLat, selectedLng], 14);
+
+        // Capa de OpenStreetMap (Gratuita)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Marcador rojo
+        marker = L.marker([selectedLat, selectedLng], { draggable: true }).addTo(map);
+
+        // Actualizar coordenadas al mover el marcador
+        marker.on('dragend', function (e) {
+            selectedLat = marker.getLatLng().lat;
+            selectedLng = marker.getLatLng().lng;
         });
 
-        // 2. Crear el marcador (el pin rojo)
-        marker = new google.maps.Marker({
-            position: { lat: selectedLat, lng: selectedLng },
-            map: map,
-            draggable: true, // Permitir al usuario mover el pin
-            animation: google.maps.Animation.DROP
-        });
-
-        // 3. Escuchar cuando el cliente termina de arrastrar el pin
-        marker.addListener("dragend", () => {
-            const position = marker.getPosition();
-            selectedLat = position.lat();
-            selectedLng = position.lng();
-        });
-
-        // 4. Configurar el Buscador Inteligente (Autocomplete)
-        const input = document.getElementById("pac-input");
-        const autocomplete = new google.maps.places.Autocomplete(input);
-        
-        // Restringir búsqueda a El Salvador (opcional, ayuda a la precisión)
-        autocomplete.setComponentRestrictions({ country: ["sv"] });
-        autocomplete.bindTo("bounds", map);
-
-        autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-            if (!place.geometry || !place.geometry.location) {
-                alert("No se encontró información para este lugar.");
-                return;
-            }
-
-            // Mover el mapa y el marcador al lugar buscado
-            if (place.geometry.viewport) {
-                map.fitBounds(place.geometry.viewport);
-            } else {
-                map.setCenter(place.geometry.location);
-                map.setZoom(17); 
-            }
-            marker.setPosition(place.geometry.location);
-            
-            // Actualizar las coordenadas seleccionadas
-            selectedLat = place.geometry.location.lat();
-            selectedLng = place.geometry.location.lng();
-        });
+        // Buscador de Direcciones (Leaflet Control Geocoder)
+        if (typeof L.Control.Geocoder !== 'undefined') {
+            L.Control.geocoder({
+                defaultMarkGeocode: false,
+                placeholder: "Buscar colonia, calle...",
+                errorMessage: "Lugar no encontrado."
+            })
+            .on('markgeocode', function(e) {
+                const center = e.geocode.center;
+                map.fitBounds(e.geocode.bbox);
+                marker.setLatLng(center);
+                selectedLat = center.lat;
+                selectedLng = center.lng;
+            })
+            .addTo(map);
+        }
+    } else {
+        setTimeout(() => { map.invalidateSize(); }, 100);
     }
 }
 
@@ -349,44 +312,45 @@ function closeMapModal() {
     document.getElementById('map-overlay').classList.remove('active');
 }
 
-// 5. Ubicación actual por GPS (Nativo del navegador)
+// Buscar ubicación por GPS del celular/navegador
 function findMyLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                selectedLat = position.coords.latitude;
-                selectedLng = position.coords.longitude;
-                const pos = { lat: selectedLat, lng: selectedLng };
-                
-                // Mover mapa y marcador a la ubicación del usuario
-                map.setCenter(pos);
-                map.setZoom(17);
-                marker.setPosition(pos);
-            },
-            () => {
-                alert("No se pudo obtener tu ubicación. Revisa los permisos de tu navegador o celular.");
-            }
-        );
-    } else {
-        alert("Tu dispositivo no soporta geolocalización.");
-    }
+    if (!map) return;
+    
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "⏳ Buscando...";
+    btn.disabled = true;
+
+    map.locate({setView: true, maxZoom: 16});
+    
+    map.once('locationfound', function(e) {
+        selectedLat = e.latlng.lat;
+        selectedLng = e.latlng.lng;
+        marker.setLatLng(e.latlng);
+        
+        btn.innerHTML = "✅ ¡Ubicación encontrada!";
+        setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+    });
+
+    map.once('locationerror', function(e) {
+        alert("No se pudo obtener la ubicación. Revisa tu GPS.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
 }
 
-// 6. Confirmar y armar el enlace para WhatsApp
+// Guardar y armar el enlace de Google Maps
 function confirmMapLocation() {
-    // Genera un enlace estándar de Google Maps con las coordenadas exactas
-    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${selectedLat},${selectedLng}`;
+    // Aquí está la magia: Transformamos las coordenadas de Leaflet en un link de Google Maps
+    const googleMapsLink = `https://www.google.com/maps?q=${selectedLat.toFixed(6)},${selectedLng.toFixed(6)}`;
     
-    // Lo guardamos en el input oculto que ya teníamos
     document.getElementById('map-coordinates').value = googleMapsLink;
     
-    // Le avisamos al cliente en el campo de notas
     const notesField = document.getElementById('location-details');
     let currentNotes = notesField.value;
     
-    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
+    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]/g, '').trim();
     notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
     
     closeMapModal();
-    alert("¡Ubicación guardada con éxito!");
 }
