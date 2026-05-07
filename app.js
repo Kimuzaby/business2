@@ -256,54 +256,77 @@ async function sendWhatsApp() {
 }
 
 // ==========================================
-// LÓGICA DEL MAPA HÍBRIDO (Leaflet -> Google Maps)
+// LÓGICA DEL MAPA (API OFICIAL DE GOOGLE MAPS)
 // ==========================================
 
 let map = null;
 let marker = null;
-let selectedLat = 13.698;  // Coordenada por defecto (San Salvador)
-let selectedLng = -89.102; // Coordenada por defecto (Ilopango/Soyapango aprox)
+let selectedLat = 13.6929;  // Coordenada por defecto (San Salvador)
+let selectedLng = -89.2182; // Coordenada por defecto
+let isMapApiLoaded = false;
+
+// Esta función es llamada automáticamente por el script de Google al terminar de cargar
+function initMap() {
+    isMapApiLoaded = true;
+}
 
 function openMapModal() {
     document.getElementById('map-modal').style.display = 'block';
     document.getElementById('map-overlay').classList.add('active');
 
-    if (!map) {
-        // Inicializamos el mapa con Leaflet
-        map = L.map('delivery-map').setView([selectedLat, selectedLng], 14);
-
-        // Capa de OpenStreetMap (Gratuita)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Marcador rojo
-        marker = L.marker([selectedLat, selectedLng], { draggable: true }).addTo(map);
-
-        // Actualizar coordenadas al mover el marcador
-        marker.on('dragend', function (e) {
-            selectedLat = marker.getLatLng().lat;
-            selectedLng = marker.getLatLng().lng;
+    if (isMapApiLoaded && !map) {
+        // 1. Crear el mapa
+        map = new google.maps.Map(document.getElementById("delivery-map"), {
+            center: { lat: selectedLat, lng: selectedLng },
+            zoom: 15,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false
         });
 
-        // Buscador de Direcciones (Leaflet Control Geocoder)
-        if (typeof L.Control.Geocoder !== 'undefined') {
-            L.Control.geocoder({
-                defaultMarkGeocode: false,
-                placeholder: "Buscar colonia, calle...",
-                errorMessage: "Lugar no encontrado."
-            })
-            .on('markgeocode', function(e) {
-                const center = e.geocode.center;
-                map.fitBounds(e.geocode.bbox);
-                marker.setLatLng(center);
-                selectedLat = center.lat;
-                selectedLng = center.lng;
-            })
-            .addTo(map);
-        }
-    } else {
-        setTimeout(() => { map.invalidateSize(); }, 100);
+        // 2. Crear el marcador (el pin rojo)
+        marker = new google.maps.Marker({
+            position: { lat: selectedLat, lng: selectedLng },
+            map: map,
+            draggable: true, // Permitir al usuario mover el pin
+            animation: google.maps.Animation.DROP
+        });
+
+        // 3. Escuchar cuando el cliente termina de arrastrar el pin
+        marker.addListener("dragend", () => {
+            const position = marker.getPosition();
+            selectedLat = position.lat();
+            selectedLng = position.lng();
+        });
+
+        // 4. Configurar el Buscador Inteligente (Autocomplete)
+        const input = document.getElementById("pac-input");
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        
+        // Restringir búsqueda a El Salvador (opcional, ayuda a la precisión)
+        autocomplete.setComponentRestrictions({ country: ["sv"] });
+        autocomplete.bindTo("bounds", map);
+
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry || !place.geometry.location) {
+                alert("No se encontró información para este lugar.");
+                return;
+            }
+
+            // Mover el mapa y el marcador al lugar buscado
+            if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+            } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17); 
+            }
+            marker.setPosition(place.geometry.location);
+            
+            // Actualizar las coordenadas seleccionadas
+            selectedLat = place.geometry.location.lat();
+            selectedLng = place.geometry.location.lng();
+        });
     }
 }
 
@@ -312,45 +335,44 @@ function closeMapModal() {
     document.getElementById('map-overlay').classList.remove('active');
 }
 
-// Buscar ubicación por GPS del celular/navegador
+// 5. Ubicación actual por GPS (Nativo del navegador)
 function findMyLocation() {
-    if (!map) return;
-    
-    const btn = event.currentTarget;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = "⏳ Buscando...";
-    btn.disabled = true;
-
-    map.locate({setView: true, maxZoom: 16});
-    
-    map.once('locationfound', function(e) {
-        selectedLat = e.latlng.lat;
-        selectedLng = e.latlng.lng;
-        marker.setLatLng(e.latlng);
-        
-        btn.innerHTML = "✅ ¡Ubicación encontrada!";
-        setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
-    });
-
-    map.once('locationerror', function(e) {
-        alert("No se pudo obtener la ubicación. Revisa tu GPS.");
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    });
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                selectedLat = position.coords.latitude;
+                selectedLng = position.coords.longitude;
+                const pos = { lat: selectedLat, lng: selectedLng };
+                
+                // Mover mapa y marcador a la ubicación del usuario
+                map.setCenter(pos);
+                map.setZoom(17);
+                marker.setPosition(pos);
+            },
+            () => {
+                alert("No se pudo obtener tu ubicación. Revisa los permisos de tu navegador o celular.");
+            }
+        );
+    } else {
+        alert("Tu dispositivo no soporta geolocalización.");
+    }
 }
 
-// Guardar y armar el enlace de Google Maps
+// 6. Confirmar y armar el enlace para WhatsApp
 function confirmMapLocation() {
-    // Aquí está la magia: Transformamos las coordenadas de Leaflet en un link de Google Maps
-    const googleMapsLink = `https://www.google.com/maps?q=${selectedLat.toFixed(6)},${selectedLng.toFixed(6)}`;
+    // Genera un enlace estándar de Google Maps con las coordenadas exactas
+    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${selectedLat},${selectedLng}`;
     
+    // Lo guardamos en el input oculto que ya teníamos
     document.getElementById('map-coordinates').value = googleMapsLink;
     
+    // Le avisamos al cliente en el campo de notas
     const notesField = document.getElementById('location-details');
     let currentNotes = notesField.value;
     
-    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]/g, '').trim();
+    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
     notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
     
     closeMapModal();
+    alert("¡Ubicación guardada con éxito!");
 }
