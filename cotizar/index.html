@@ -383,25 +383,25 @@
      
             y += 105;
      
-            // ── VALIDITY NOTICE BOX (NUEVO) ──────────────────────────────
-            doc.setFillColor(255, 255, 240);
-            doc.setDrawColor(212, 168, 71);
-            doc.setLineWidth(1.5);
-            doc.roundedRect(margin, y, contentW, 65, 6, 6, 'FD');
-            
-            // Título de validez
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...brown);
-            doc.text('📋 Cotización válida por 3 meses', pageW / 2, y + 22, { align: 'center' });
-            
-            // Subtítulo
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(...grey);
-            doc.text('Cotizaciones de más de 3 meses están sujetas a cambios sin previo aviso', pageW / 2, y + 42, { align: 'center' });
-     
-            y += 80;
+// ── VALIDITY NOTICE BOX (CORREGIDO) ──────────────────────────
+doc.setFillColor(255, 255, 240);
+doc.setDrawColor(212, 168, 71);
+doc.setLineWidth(1.5);
+doc.roundedRect(margin, y, contentW, 65, 6, 6, 'FD');
+
+// Título de validez
+doc.setFontSize(12);
+doc.setFont('helvetica', 'bold');
+doc.setTextColor(...brown);
+doc.text('Cotizaci\u00F3n v\u00E1lida por 3 meses', pageW / 2, y + 22, { align: 'center' });
+
+// Subtítulo
+doc.setFontSize(9);
+doc.setFont('helvetica', 'normal');
+doc.setTextColor(...grey);
+doc.text('Cotizaciones de m\u00E1s de 3 meses est\u00E1n sujetas a cambios sin previo aviso', pageW / 2, y + 42, { align: 'center' });
+
+y += 80;
      
             // ── THANK YOU BANNER ─────────────────────────────────────────
             doc.setFillColor(245, 240, 235);
@@ -423,16 +423,17 @@
      
             y += 80;
      
-            // ── FOOTER NOTE ──────────────────────────────────────────────
-            doc.setFontSize(8);
-            doc.setTextColor(160, 160, 160);
-            doc.text('Documento generado automáticamente. Precios válidos por 3 meses desde la emisión.', pageW / 2, y, { align: 'center' });
-            doc.text('Cotizaciones posteriores a 3 meses están sujetas a cambios sin previo aviso.', pageW / 2, y + 14, { align: 'center' });
-            doc.text('Para reservar, adjunte este PDF a nuestro WhatsApp oficial.', pageW / 2, y + 28, { align: 'center' });
-     
-            // ── SAVE ─────────────────────────────────────────────────────
-            const filename = `Cotizacion_LaAbuela_${name.replace(/\s+/g, '_')}.pdf`;
-            doc.save(filename);
+// ── FOOTER NOTE (CORREGIDO) ──────────────────────────────────
+doc.setFontSize(8);
+doc.setTextColor(160, 160, 160);
+doc.setFont('helvetica', 'normal');
+doc.text('Documento generado autom\u00E1ticamente. Precios v\u00E1lidos por 3 meses desde la emisi\u00F3n.', pageW / 2, y, { align: 'center' });
+doc.text('Cotizaciones posteriores a 3 meses est\u00E1n sujetas a cambios sin previo aviso.', pageW / 2, y + 14, { align: 'center' });
+doc.text('Para reservar, adjunte este PDF a nuestro WhatsApp oficial.', pageW / 2, y + 28, { align: 'center' });
+
+// ── SAVE ─────────────────────────────────────────────────────
+const filename = `Cotizacion_LaAbuela_${name.replace(/\s+/g, '_')}.pdf`;
+doc.save(filename);
      
             // ── WHATSAPP REDIRECT ────────────────────────────────────────
             setTimeout(() => {
