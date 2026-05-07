@@ -175,7 +175,7 @@ async function sendWhatsApp() {
 
     const phone = "50370483939"; 
     
-    let messageText = `*NUEVO PEDIDO: LA ABUELA COCINA URBANA* 🍔\n\n`;
+    let messageText = `*NUEVO PEDIDO: LA ABUELA COCINA URBANA*\n\n`;
     messageText += `*Cliente:* ${clientName}\n`;
     
     if (deliveryMethod === 'delivery') {
@@ -185,7 +185,7 @@ async function sendWhatsApp() {
     }
     
     cart.forEach(item => {
-        messageText += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
+        messageText += `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
 
     if (deliveryCost > 0) {
@@ -204,7 +204,7 @@ async function sendWhatsApp() {
     // AÑADIMOS EL ENLACE DEL MAPA SI EXISTE
     const mapCoords = document.getElementById('map-coordinates');
     if (deliveryMethod === 'delivery' && mapCoords && mapCoords.value !== '') {
-        messageText += `*📍 Ver ubicación exacta en el mapa:* \n${mapCoords.value}\n`;
+        messageText += `*Ver ubicación exacta en el mapa:* \n${mapCoords.value}\n`;
     }
     
     messageText += "\n¡Gracias por preferir a La Abuela!";
