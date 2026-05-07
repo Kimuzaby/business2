@@ -31,6 +31,21 @@ function toggleCart() {
     cartOverlay.classList.toggle('active');
 }
 
+// 1. NUEVA FUNCIÓN: Muestra u oculta la selección de zonas
+function toggleDeliveryZones() {
+    const method = document.getElementById('delivery-method').value;
+    const zonesContainer = document.getElementById('delivery-zones-container');
+    const deliveryZone = document.getElementById('delivery-zone');
+    
+    if (method === 'delivery') {
+        zonesContainer.style.display = 'block';
+    } else {
+        zonesContainer.style.display = 'none';
+        deliveryZone.value = ''; // Resetea el valor si cambia de método
+    }
+    saveAndRenderCart(); // Recalcula el total si cambió el método de entrega
+}
+
 function addToCart(id, name, price) {
     const existing = cart.find(i => i.id === id);
     if (existing) { existing.quantity += 1; }
@@ -53,11 +68,14 @@ function emptyCart() {
         cart = [];
         document.getElementById('client-name').value = '';
         document.getElementById('delivery-method').value = '';
+        document.getElementById('delivery-zone').value = '';
         document.getElementById('location-details').value = '';
+        toggleDeliveryZones(); // Asegurarnos de que el desplegable se oculte al vaciar
         saveAndRenderCart();
     }
 }
 
+// 2. LÓGICA DE COBRO: Calcular los $3.00 si se selecciona delivery
 function saveAndRenderCart() {
     localStorage.setItem('cart_la_abuela', JSON.stringify(cart));
     cartItemsContainer.innerHTML = '';
@@ -72,6 +90,7 @@ function saveAndRenderCart() {
         btnWhatsApp.disabled = true;
         btnWhatsApp.style.opacity = '0.5';
         btnEmpty.style.display = 'none';
+        cartTotalElement.innerText = `$0.00`;
     } else {
         btnWhatsApp.disabled = false;
         btnWhatsApp.style.opacity = '1';
@@ -94,95 +113,124 @@ function saveAndRenderCart() {
                     </div>
                 </div>`;
         });
+
+        // Verificamos si aplica el cobro de envío ($3.00)
+        const deliveryMethod = document.getElementById('delivery-method');
+        const deliveryZone = document.getElementById('delivery-zone');
+        let deliveryCost = 0;
+
+        if (deliveryMethod && deliveryMethod.value === 'delivery' && deliveryZone && deliveryZone.value !== '') {
+            deliveryCost = 3.00;
+        }
+
+        const finalTotal = total + deliveryCost;
+
+        // Si hay costo de envío, mostramos el desglose en el carrito
+        if (deliveryCost > 0) {
+            cartTotalElement.innerHTML = `
+                <div style="display: flex; flex-direction: column; text-align: right;">
+                    <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">Subtotal: $${total.toFixed(2)}</span>
+                    <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal; margin-bottom: 5px;">Envío: $${deliveryCost.toFixed(2)}</span>
+                    <span>$${finalTotal.toFixed(2)}</span>
+                </div>
+            `;
+        } else {
+            cartTotalElement.innerText = `$${finalTotal.toFixed(2)}`;
+        }
     }
+    
     cartCountElement.innerText = totalItems;
-    cartTotalElement.innerText = `$${total.toFixed(2)}`;
 }
 
-/**
- * FUNCIÓN ACTUALIZADA: Envía a Google Sheets y luego a WhatsApp
- */
+// 3. ENVÍO DE WHATSAPP ACTUALIZADO
 async function sendWhatsApp() {
     const clientName = document.getElementById('client-name').value;
     const deliveryMethod = document.getElementById('delivery-method').value;
+    const deliveryZone = document.getElementById('delivery-zone').value;
     const locationDetails = document.getElementById('location-details').value;
     const paymentMethod = document.getElementById('payment-method').value;
 
-    // Validación básica de campos
+    // Validación básica de campos, ahora incluyendo la zona si se elige delivery
     if (cart.length === 0 || !clientName || !deliveryMethod) {
         alert("Por favor completa tu nombre y el método de entrega.");
         return;
     }
-
-    const totalOrder = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
-
-    // 1. Preparar el mensaje y la URL de WhatsApp INMEDIATAMENTE
-    const phone = "50370483939"; // Asegúrate de que el número incluya el código de país correcto
     
-    let messageText = `NUEVO PEDIDO: LA ABUELA COCINA URBANA\n\n`;
-    messageText += `Cliente: ${clientName}\n`;
-    messageText += `Modalidad: ${deliveryMethod}\n\n`;
+    if (deliveryMethod === 'delivery' && !deliveryZone) {
+        alert("Por favor selecciona tu zona de entrega.");
+        return;
+    }
+
+    // Cálculos de subtotal y envío
+    const subtotalOrder = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const deliveryCost = (deliveryMethod === 'delivery' && deliveryZone !== '') ? 3.00 : 0;
+    const totalOrder = (subtotalOrder + deliveryCost).toFixed(2);
+
+    const phone = "50370483939"; 
+    
+    let messageText = `*NUEVO PEDIDO: LA ABUELA COCINA URBANA* 🍔\n\n`;
+    messageText += `*Cliente:* ${clientName}\n`;
+    
+    if (deliveryMethod === 'delivery') {
+        messageText += `*Modalidad:* Delivery (${deliveryZone})\n\n`;
+    } else {
+        messageText += `*Modalidad:* ${deliveryMethod}\n\n`;
+    }
     
     cart.forEach(item => {
-        messageText += ` ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
+        messageText += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
 
-    messageText += `\nTOTAL A PAGAR: $${totalOrder}\n`;
-    messageText += `Pago: ${paymentMethod}\n`;
-    if (locationDetails) messageText += `Detalles/Dirección: ${locationDetails}\n`;
+    if (deliveryCost > 0) {
+        messageText += `\n*Subtotal:* $${subtotalOrder.toFixed(2)}\n`;
+        messageText += `*Costo de envío:* $${deliveryCost.toFixed(2)}\n`;
+    }
+
+    messageText += `\n*TOTAL A PAGAR: $${totalOrder}*\n`;
+    messageText += `*Pago:* ${paymentMethod}\n`;
+    if (locationDetails) messageText += `*Detalles/Dirección:* ${locationDetails}\n`;
     
     messageText += "\n¡Gracias por preferir a La Abuela!";
     
     // Construimos la URL de WhatsApp
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`;
     
-// Versión mejorada de window.open para iOS
-function openWhatsApp(url) {
-    // Detectar iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
-    if (isIOS) {
-        // Intentar con el esquema directo de WhatsApp primero
-        const phone = "50370483939";
-        const message = url.split('?text=')[1];
-        const directUrl = `whatsapp://send?phone=${phone}&text=${message || ''}`;
+    // Versión mejorada de window.open para iOS
+    function openWhatsApp(url) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         
-        const startTime = Date.now();
-        window.location.href = directUrl;
-        
-        // Si después de 1 segundo no se abrió, redirigir a la versión web
-        setTimeout(function() {
-            if (Date.now() - startTime < 1500) {
-                window.location.href = url;
-            }
-        }, 1000);
-    } else {
-        window.open(url, '_blank');
+        if (isIOS) {
+            const phone = "50370483939";
+            const message = url.split('?text=')[1];
+            const directUrl = `whatsapp://send?phone=${phone}&text=${message || ''}`;
+            
+            const startTime = Date.now();
+            window.location.href = directUrl;
+            
+            setTimeout(function() {
+                if (Date.now() - startTime < 1500) {
+                    window.location.href = url;
+                }
+            }, 1000);
+        } else {
+            window.open(url, '_blank');
+        }
     }
-}
 
-// Luego en sendWhatsApp, reemplazar window.open(url, '_blank'); por:
-// openWhatsApp(url);
+    openWhatsApp(url);
 
-
-
-    // 2. ABRIMOS WHATSAPP INMEDIATAMENTE, sin esperar al fetch
-    // Usamos un pequeño truco: abrir en el mismo evento de clic antes de cualquier operación async
-    window.open(url, '_blank');
-
-    // 3. AHORA SÍ, enviamos a Google Sheets en segundo plano (sin bloquear la UI)
+    // Registro asíncrono a Google Sheets en segundo plano
     const orderData = {
         id_pedido: Date.now(),
         fecha: new Date().toLocaleString(),
         cliente: clientName,
         items: cart.map(item => `${item.quantity}x ${item.name}`).join(", "),
         total: totalOrder,
-        metodo_entrega: deliveryMethod,
+        metodo_entrega: deliveryMethod === 'delivery' ? `Delivery: ${deliveryZone}` : deliveryMethod,
         pago: paymentMethod,
         notas: locationDetails
     };
 
-    // Enviamos a Google Sheets sin esperar respuesta ni bloquear
     fetch('https://sheetdb.io/api/v1/5r8sg0dmxgzp0', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

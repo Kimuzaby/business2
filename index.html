@@ -41,12 +41,19 @@
                     <h2>¡Celebra con Nosotros!</h2>
                     <p>Nos encanta ser parte de tus momentos especiales. Ya sea un cumpleaños, una reunión familiar o un evento corporativo, en La Abuela te recibimos con el calor de hogar y el sabor urbano que nos caracteriza.</p>
                     <h3>¿Quieres hacer tu evento con nosotros?</h3>
-<a href="./cotizar/index.html" class="btn-event" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">¡Cotiza aquí!</a>
+                    <a href="./cotizar/index.html" class="btn-event" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">¡Cotiza aquí!</a>
                 </div>
                 <div class="events-image">
                     <img src="img/evento.webp" alt="Evento en La Abuela">
                 </div>
             </div>
+        </section>
+
+        <section style="max-width: 800px; margin: 40px auto; padding: 25px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-sm);">
+            <h3 style="color: var(--gold); margin-bottom: 15px; font-family: 'Playfair Display', serif; font-size: 1.5rem;">Información del Establecimiento</h3>
+            <p style="margin-bottom: 8px; font-size: 1.05rem;"><strong>Horarios de salón:</strong> Miércoles a domingo de 3:00 p.m. a 9:30 p.m.</p>
+            <p style="margin-bottom: 15px; font-size: 1.05rem;"><strong>Delivery:</strong> 6:00 p.m. a 9:30 p.m.</p>
+            <p style="font-size: 0.9rem; color: var(--text-muted); background: rgba(255,255,255,0.05); display: inline-block; padding: 8px 15px; border-radius: 6px;"><em>* Nota: Recargo adicional dependiendo de zona de entrega.</em></p>
         </section>
 
         <div class="menu-header">
@@ -321,12 +328,29 @@
                 <input type="text" id="client-name" class="form-input" placeholder="Ej: Juan Pérez">
 
                 <label class="form-label" for="delivery-method">Método de Entrega:</label>
-                <select id="delivery-method" class="form-input">
+                <select id="delivery-method" class="form-input" onchange="toggleDeliveryZones()">
                     <option value="">Seleccione una opción...</option>
                     <option value="delivery">Delivery</option>
                     <option value="pickup">Para llevar / Retirar en local</option>
                     <option value="mesa">Consumo en restaurante (Mesa)</option>
                 </select>
+
+                <div id="delivery-zones-container" style="display: none; margin-bottom: 15px;">
+                    <label class="form-label" for="delivery-zone">Zona de Entrega (Envío +$3.00):</label>
+                    <select id="delivery-zone" class="form-input" style="margin-bottom: 0;" onchange="saveAndRenderCart()">
+                        <option value="">Seleccione su zona...</option>
+                        <option value="San Bartolo">San Bartolo</option>
+                        <option value="Centro Urbano">Centro Urbano</option>
+                        <option value="Ilopango">Ilopango</option>
+                        <option value="Parte de San Martín">Parte de San Martín</option>
+                        <option value="Las Cimas #1">Las Cimas #1</option>
+                        <option value="Las Cimas #2">Las Cimas #2</option>
+                        <option value="Las Cimas #3">Las Cimas #3</option>
+                        <option value="Cumbres">Cumbres</option>
+                        <option value="Altavista">Altavista</option>
+                        <option value="Soyapango">Soyapango</option>
+                    </select>
+                </div>
 
                 <label class="form-label" for="location-details">Dirección / Notas:</label>
                 <textarea id="location-details" class="form-input" style="min-height: 60px" placeholder="Si pediste Tacos/Burritos, especifica tu carne (Res, Pollo, Cerdo). Agrega tu dirección o número de mesa..."></textarea>
