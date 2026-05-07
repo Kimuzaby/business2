@@ -168,32 +168,46 @@ async function sendWhatsApp() {
 
     const phone = "50370483939"; 
     
-    let messageText = `*NUEVO PEDIDO: LA ABUELA COCINA URBANA* 🍔\n\n`;
-    messageText += `*Cliente:* ${clientName}\n`;
+    let messageText = `NUEVO PEDIDO: LA ABUELA COCINA URBANA\n\n`;
+    messageText += `Cliente: ${clientName}\n`;
     
     if (deliveryMethod === 'delivery') {
-        messageText += `*Modalidad:* Delivery (${deliveryZone})\n\n`;
+        messageText += `Modalidad: Delivery (${deliveryZone})\n\n`;
     } else {
-        messageText += `*Modalidad:* ${deliveryMethod}\n\n`;
+        messageText += `Modalidad: ${deliveryMethod}\n\n`;
     }
     
     cart.forEach(item => {
         messageText += `▪️ ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}\n`;
     });
 
+    
     if (deliveryCost > 0) {
-        messageText += `\n*Subtotal:* $${subtotalOrder.toFixed(2)}\n`;
-        messageText += `*Costo de envío:* $${deliveryCost.toFixed(2)}\n`;
+        messageText += `\nSubtotal: $${subtotalOrder.toFixed(2)}\n`;
+        messageText += `Costo de envío: $${deliveryCost.toFixed(2)}\n`;
     }
 
-    messageText += `\n*TOTAL A PAGAR: $${totalOrder}*\n`;
-    messageText += `*Pago:* ${paymentMethod}\n`;
-    if (locationDetails) messageText += `*Detalles/Dirección:* ${locationDetails}\n`;
+    messageText += `\nTOTAL A PAGAR: $${totalOrder}\n`;
+    messageText += `Pago: ${paymentMethod}\n`;
+    
+    if (locationDetails) {
+        // Limpiamos la etiqueta visual que le pusimos al cliente
+        let cleanNotes = locationDetails.replace('[📍 Ubicación fijada en mapa]', '').trim();
+        messageText += `Notas: ${cleanNotes}\n`;
+    }
+
+    // AÑADIMOS EL ENLACE DEL MAPA SI EXISTE
+    const mapCoords = document.getElementById('map-coordinates').value;
+    if (deliveryMethod === 'delivery' && mapCoords) {
+        messageText += `📍 Ver ubicación exacta en el mapa: \n${mapCoords}\n`;
+    }
     
     messageText += "\n¡Gracias por preferir a La Abuela!";
     
     // Construimos la URL de WhatsApp
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`;
+    
+    // ... (el resto del código de iOS y el fetch se mantiene igual) ...
     
     // Versión mejorada de window.open para iOS
     function openWhatsApp(url) {
@@ -238,4 +252,74 @@ async function sendWhatsApp() {
     }).catch(error => {
         console.error("Error al registrar en Sheets (no crítico):", error);
     });
+}
+
+// ==========================================
+// LÓGICA DEL MAPA (Leaflet + OpenStreetMap)
+// ==========================================
+
+let map = null;
+let marker = null;
+let selectedLat = 13.698;  // Coordenada por defecto (Centro de San Salvador, aprox)
+let selectedLng = -89.102; // Coordenada por defecto (Ilopango/Soyapango aprox)
+
+function openMapModal() {
+    document.getElementById('map-modal').style.display = 'block';
+    document.getElementById('map-overlay').classList.add('active');
+
+    // Solo inicializar el mapa una vez para evitar errores
+    if (!map) {
+        // Inicializamos el mapa en las coordenadas por defecto
+        map = L.map('delivery-map').setView([selectedLat, selectedLng], 14);
+
+        // Cargamos las "capas" visuales gratuitas de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Agregamos un marcador draggable (que se puede arrastrar)
+        marker = L.marker([selectedLat, selectedLng], { draggable: true }).addTo(map);
+
+        // Si el usuario arrastra el marcador, actualizamos las variables
+        marker.on('dragend', function (e) {
+            selectedLat = marker.getLatLng().lat;
+            selectedLng = marker.getLatLng().lng;
+        });
+
+        // Intentar geolocalizar al usuario automáticamente (pedirá permiso en su celular)
+        map.locate({setView: true, maxZoom: 16});
+        map.on('locationfound', function(e) {
+            selectedLat = e.latlng.lat;
+            selectedLng = e.latlng.lng;
+            marker.setLatLng(e.latlng); // Movemos el pin a donde está el cliente
+        });
+    } else {
+        // Si el mapa ya estaba cargado, forzamos que se redibuje bien
+        setTimeout(() => { map.invalidateSize(); }, 100);
+    }
+}
+
+function closeMapModal() {
+    document.getElementById('map-modal').style.display = 'none';
+    document.getElementById('map-overlay').classList.remove('active');
+}
+
+function confirmMapLocation() {
+    const coordsStr = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
+    const googleMapsLink = `https://www.google.com/maps?q=${selectedLat},${selectedLng}`;
+    
+    // Guardamos la coordenada en el campo oculto
+    document.getElementById('map-coordinates').value = googleMapsLink;
+    
+    // Añadimos un texto amigable al área de notas para que el cliente sepa que se guardó
+    const notesField = document.getElementById('location-details');
+    let currentNotes = notesField.value;
+    
+    // Limpiar notas anteriores del mapa si ya había puesto una
+    currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]/g, '').trim();
+    
+    notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
+    
+    closeMapModal();
+    alert("¡Ubicación guardada con éxito!");
 }

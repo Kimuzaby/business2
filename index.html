@@ -9,6 +9,9 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
 
@@ -353,8 +356,13 @@
                 </div>
 
                 <label class="form-label" for="location-details">Dirección / Notas:</label>
-                <textarea id="location-details" class="form-input" style="min-height: 60px" placeholder="Si pediste Tacos/Burritos, especifica tu carne (Res, Pollo, Cerdo). Agrega tu dirección o número de mesa..."></textarea>
-
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" onclick="openMapModal()" style="background: var(--bg); color: var(--gold); border: 1px solid var(--gold); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                        📍 Seleccionar ubicación exacta
+                    </button>
+                    <input type="hidden" id="map-coordinates" value="">
+                </div>
+                <textarea id="location-details" class="form-input" style="min-height: 60px" placeholder="Si pediste Tacos/Burritos, especifica tu carne. Escribe tu dirección o usa el botón de arriba para fijarla en el mapa..."></textarea>
                 <label class="form-label" for="payment-method">Método de Pago:</label>
                 <select id="payment-method" class="form-input" style="margin-bottom: 0;">
                     <option value="Efectivo">Efectivo</option>
@@ -377,6 +385,18 @@
 </button>
         </div>
     </aside>
+    <div id="map-overlay" class="overlay" onclick="closeMapModal()" style="z-index: 2000;"></div>
+    <div id="map-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; background: var(--bg-card); padding: 20px; border-radius: var(--radius); z-index: 2001; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="color: var(--gold); margin: 0;">📍 Ubica tu entrega</h3>
+            <button onclick="closeMapModal()" style="background: transparent; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer;">✕</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Arrastra el mapa o usa tus dedos para mover el marcador rojo a la ubicación exacta donde quieres recibir tu pedido.</p>
+        
+        <div id="delivery-map" style="height: 350px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px;"></div>
+        
+        <button onclick="confirmMapLocation()" class="btn-event" style="width: 100%; padding: 12px; border-radius: 8px;">Confirmar esta ubicación</button>
+    </div>
 
     <script src="app.js"></script>
 </body>
