@@ -261,11 +261,12 @@ async function sendWhatsApp() {
 
 let map = null;
 let marker = null;
-let selectedLat = 13.6929;  // Coordenada por defecto (San Salvador)
-let selectedLng = -89.2182; // Coordenada por defecto
+// Coordenadas centradas por defecto en la zona de Ilopango / San Salvador
+let selectedLat = 13.7013;  
+let selectedLng = -89.1094; 
 let isMapApiLoaded = false;
 
-// Esta función es llamada automáticamente por el script de Google al terminar de cargar
+// Esta función es llamada por Google Maps cuando el script termina de cargar
 function initMap() {
     isMapApiLoaded = true;
 }
@@ -284,26 +285,34 @@ function openMapModal() {
             fullscreenControl: false
         });
 
-        // 2. Crear el marcador (el pin rojo)
+        // 2. Crear el pin arrastrable
         marker = new google.maps.Marker({
             position: { lat: selectedLat, lng: selectedLng },
             map: map,
-            draggable: true, // Permitir al usuario mover el pin
+            draggable: true,
             animation: google.maps.Animation.DROP
         });
 
-        // 3. Escuchar cuando el cliente termina de arrastrar el pin
+        // 3. Capturar la nueva coordenada si el usuario arrastra el pin
         marker.addListener("dragend", () => {
             const position = marker.getPosition();
             selectedLat = position.lat();
             selectedLng = position.lng();
         });
 
-        // 4. Configurar el Buscador Inteligente (Autocomplete)
+        // NUEVO: Permitir hacer clic en cualquier parte del mapa para mover el pin
+        map.addListener("click", (mapsMouseEvent) => {
+            const position = mapsMouseEvent.latLng;
+            marker.setPosition(position);
+            selectedLat = position.lat();
+            selectedLng = position.lng();
+        });
+
+        // 4. Configurar la barra de búsqueda (Autocomplete)
         const input = document.getElementById("pac-input");
         const autocomplete = new google.maps.places.Autocomplete(input);
         
-        // Restringir búsqueda a El Salvador (opcional, ayuda a la precisión)
+        // Restringir resultados a El Salvador para mayor precisión
         autocomplete.setComponentRestrictions({ country: ["sv"] });
         autocomplete.bindTo("bounds", map);
 
@@ -314,7 +323,7 @@ function openMapModal() {
                 return;
             }
 
-            // Mover el mapa y el marcador al lugar buscado
+            // Centrar el mapa en el lugar buscado
             if (place.geometry.viewport) {
                 map.fitBounds(place.geometry.viewport);
             } else {
@@ -323,7 +332,6 @@ function openMapModal() {
             }
             marker.setPosition(place.geometry.location);
             
-            // Actualizar las coordenadas seleccionadas
             selectedLat = place.geometry.location.lat();
             selectedLng = place.geometry.location.lng();
         });
@@ -335,38 +343,65 @@ function closeMapModal() {
     document.getElementById('map-overlay').classList.remove('active');
 }
 
-// 5. Ubicación actual por GPS (Nativo del navegador)
-function findMyLocation() {
+// 5. Geolocalización por GPS (Nativo del navegador) - MEJORADO PARA MÓVILES
+function findMyLocation(event) {
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "⏳ Buscando...";
+    btn.disabled = true;
+
     if (navigator.geolocation) {
+        // Configuraciones estrictas para forzar el GPS en iOS y Android
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 15000, // Le damos 15 segundos al celular para encontrar los satélites
+            maximumAge: 0
+        };
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 selectedLat = position.coords.latitude;
                 selectedLng = position.coords.longitude;
                 const pos = { lat: selectedLat, lng: selectedLng };
                 
-                // Mover mapa y marcador a la ubicación del usuario
                 map.setCenter(pos);
                 map.setZoom(17);
                 marker.setPosition(pos);
+                
+                btn.innerHTML = "✅ ¡Ubicación encontrada!";
+                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
             },
-            () => {
-                alert("No se pudo obtener tu ubicación. Revisa los permisos de tu navegador o celular.");
-            }
+            (error) => {
+                // Manejo de errores detallado para guiar al usuario
+                let mensajeError = "No se pudo obtener tu ubicación. ";
+                if (error.code === 1) {
+                    mensajeError = "Denegaste el permiso de ubicación. Por favor, ve a los ajustes de tu celular o navegador y permite el acceso al GPS para esta página.";
+                } else if (error.code === 2) {
+                    mensajeError = "La señal del GPS es muy débil o está apagado. Intenta buscar manualmente.";
+                } else if (error.code === 3) {
+                    mensajeError = "Se agotó el tiempo de espera. El GPS tardó mucho en responder.";
+                }
+                
+                alert(mensajeError);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            },
+            options
         );
     } else {
         alert("Tu dispositivo no soporta geolocalización.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
-// 6. Confirmar y armar el enlace para WhatsApp
+// 6. Confirmar y crear el enlace para WhatsApp
 function confirmMapLocation() {
-    // Genera un enlace estándar de Google Maps con las coordenadas exactas
-    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${selectedLat},${selectedLng}`;
+    // Generamos un enlace universal de Google Maps que abre la app en cualquier celular
+    const googleMapsLink = `https://www.google.com/maps?q=${selectedLat},${selectedLng}`;
     
-    // Lo guardamos en el input oculto que ya teníamos
     document.getElementById('map-coordinates').value = googleMapsLink;
     
-    // Le avisamos al cliente en el campo de notas
     const notesField = document.getElementById('location-details');
     let currentNotes = notesField.value;
     
