@@ -270,168 +270,123 @@ async function sendWhatsApp() {
 }
 
 // ==========================================
-// LÓGICA DEL MAPA (Leaflet + Buscador + GPS)
+// LÓGICA DEL MAPA (API OFICIAL DE GOOGLE MAPS)
 // ==========================================
 
 let map = null;
 let marker = null;
-let selectedLat = 13.698;
-let selectedLng = -89.102;
+let selectedLat = 13.6929;  // Coordenada por defecto (San Salvador)
+let selectedLng = -89.2182; // Coordenada por defecto
+let isMapApiLoaded = false;
+
+// Esta función es llamada automáticamente por el script de Google al terminar de cargar
+function initMap() {
+    isMapApiLoaded = true;
+}
 
 function openMapModal() {
     document.getElementById('map-modal').style.display = 'block';
     document.getElementById('map-overlay').classList.add('active');
-    
-    // Bloquear el scroll del body cuando el mapa está abierto en móvil
-    document.body.style.overflow = 'hidden';
 
-    if (!map) {
-        map = L.map('delivery-map', {
-            zoomControl: true,
-            attributionControl: false
-        }).setView([selectedLat, selectedLng], 14);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        // Marcador arrastrable con icono más visible para móviles
-        const customIcon = L.icon({
-            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
+    if (isMapApiLoaded && !map) {
+        // 1. Crear el mapa
+        map = new google.maps.Map(document.getElementById("delivery-map"), {
+            center: { lat: selectedLat, lng: selectedLng },
+            zoom: 15,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false
         });
 
-        marker = L.marker([selectedLat, selectedLng], { 
-            draggable: true,
-            icon: customIcon 
-        }).addTo(map);
-
-        marker.on('dragend', function (e) {
-            selectedLat = marker.getLatLng().lat;
-            selectedLng = marker.getLatLng().lng;
+        // 2. Crear el marcador (el pin rojo)
+        marker = new google.maps.Marker({
+            position: { lat: selectedLat, lng: selectedLng },
+            map: map,
+            draggable: true, // Permitir al usuario mover el pin
+            animation: google.maps.Animation.DROP
         });
 
-        // Click en el mapa para mover el marcador (útil en móviles)
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            selectedLat = e.latlng.lat;
-            selectedLng = e.latlng.lng;
+        // 3. Escuchar cuando el cliente termina de arrastrar el pin
+        marker.addListener("dragend", () => {
+            const position = marker.getPosition();
+            selectedLat = position.lat();
+            selectedLng = position.lng();
         });
 
-        // Buscador de direcciones
-        const geocoder = L.Control.geocoder({
-            defaultMarkGeocode: false,
-            placeholder: "🔍 Buscar dirección...",
-            errorMessage: "No se encontró el lugar.",
-            collapsed: false // Siempre visible en móviles
-        })
-        .on('markgeocode', function(e) {
-            const center = e.geocode.center;
+        // 4. Configurar el Buscador Inteligente (Autocomplete)
+        const input = document.getElementById("pac-input");
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        
+        // Restringir búsqueda a El Salvador (opcional, ayuda a la precisión)
+        autocomplete.setComponentRestrictions({ country: ["sv"] });
+        autocomplete.bindTo("bounds", map);
+
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry || !place.geometry.location) {
+                alert("No se encontró información para este lugar.");
+                return;
+            }
+
+            // Mover el mapa y el marcador al lugar buscado
+            if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+            } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17); 
+            }
+            marker.setPosition(place.geometry.location);
             
-            map.setView(center, 16);
-            marker.setLatLng(center);
-            
-            selectedLat = center.lat;
-            selectedLng = center.lng;
-        })
-        .addTo(map);
-
-    } else {
-        // Redibujar el mapa cuando se abre de nuevo
-        setTimeout(() => { 
-            map.invalidateSize();
-            // Centrar en la última ubicación seleccionada
-            map.setView([selectedLat, selectedLng], 14);
-            marker.setLatLng([selectedLat, selectedLng]);
-        }, 200);
+            // Actualizar las coordenadas seleccionadas
+            selectedLat = place.geometry.location.lat();
+            selectedLng = place.geometry.location.lng();
+        });
     }
 }
 
 function closeMapModal() {
     document.getElementById('map-modal').style.display = 'none';
     document.getElementById('map-overlay').classList.remove('active');
-    document.body.style.overflow = ''; // Restaurar scroll
 }
 
+// 5. Ubicación actual por GPS (Nativo del navegador)
 function findMyLocation() {
-    if (!map) return;
-    
-    const btn = event.currentTarget;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = "⏳ Buscando tu ubicación...";
-    btn.disabled = true;
-
-    // Opciones específicas para mejor funcionamiento en móviles
-    const options = {
-        enableHighAccuracy: true, // Mayor precisión GPS
-        timeout: 10000,           // 10 segundos máximo
-        maximumAge: 0,            // No usar caché
-        setView: true,
-        maxZoom: 18
-    };
-
-    map.locate(options);
-    
-    map.once('locationfound', function(e) {
-        selectedLat = e.latlng.lat;
-        selectedLng = e.latlng.lng;
-        marker.setLatLng(e.latlng);
-        
-        // Popup temporal para mostrar la ubicación encontrada
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent('📍 ¡Ubicación encontrada!<br>Puedes ajustar el marcador')
-            .openOn(map);
-        
-        btn.innerHTML = "✅ ¡Listo!";
-        setTimeout(() => { 
-            btn.innerHTML = originalText; 
-            btn.disabled = false; 
-        }, 2500);
-    });
-
-    map.once('locationerror', function(e) {
-        let errorMsg = "No se pudo obtener tu ubicación.";
-        
-        if (e.code === 1) {
-            errorMsg += "\n\n⚠️ Permiso denegado. Verifica que:\n• El GPS esté activado\n• Hayas dado permiso de ubicación\n• No estés en modo incógnito";
-        } else if (e.code === 2) {
-            errorMsg += "\n\n⚠️ Ubicación no disponible. Intenta buscar manualmente.";
-        } else if (e.code === 3) {
-            errorMsg += "\n\n⚠️ Tiempo agotado. Intenta de nuevo.";
-        }
-        
-        alert(errorMsg);
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    });
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                selectedLat = position.coords.latitude;
+                selectedLng = position.coords.longitude;
+                const pos = { lat: selectedLat, lng: selectedLng };
+                
+                // Mover mapa y marcador a la ubicación del usuario
+                map.setCenter(pos);
+                map.setZoom(17);
+                marker.setPosition(pos);
+            },
+            () => {
+                alert("No se pudo obtener tu ubicación. Revisa los permisos de tu navegador o celular.");
+            }
+        );
+    } else {
+        alert("Tu dispositivo no soporta geolocalización.");
+    }
 }
 
+// 6. Confirmar y armar el enlace para WhatsApp
 function confirmMapLocation() {
-    const coordsStr = `${selectedLat.toFixed(6)}, ${selectedLng.toFixed(6)}`;
-    const googleMapsLink = `https://www.google.com/maps?q=${selectedLat},${selectedLng}`;
+    // Genera un enlace estándar de Google Maps con las coordenadas exactas
+    const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${selectedLat},${selectedLng}`;
     
+    // Lo guardamos en el input oculto que ya teníamos
     document.getElementById('map-coordinates').value = googleMapsLink;
     
+    // Le avisamos al cliente en el campo de notas
     const notesField = document.getElementById('location-details');
     let currentNotes = notesField.value;
     
-    // Limpiar etiqueta anterior si existe
     currentNotes = currentNotes.replace(/\[📍 Ubicación fijada en mapa\]\n?/g, '').trim();
-    
-    // Agregar nueva etiqueta
     notesField.value = `[📍 Ubicación fijada en mapa]\n${currentNotes}`.trim();
     
-    // Feedback visual breve
-    const confirmBtn = event.currentTarget;
-    confirmBtn.textContent = "✅ ¡Ubicación confirmada!";
-    setTimeout(() => {
-        confirmBtn.textContent = "Confirmar esta ubicación";
-    }, 1500);
-    
     closeMapModal();
+    alert("¡Ubicación guardada con éxito!");
 }
