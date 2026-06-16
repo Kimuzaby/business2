@@ -10,6 +10,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+
 
     <style>
         .admin-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
@@ -45,7 +48,10 @@
                         <option value="tab-bebidas">Bebidas & Extras</option>
                     </select>
                 </div>
-                <div class="form-group"><label>URL de Imagen (Ej: img/comida.jpg)</label><input type="text" id="p-imagen" class="form-input" value="img/food.png"></div>
+                <div class="form-group">
+                    <label>Imagen del Platillo</label>
+                    <input type="file" id="p-imagen-file" class="form-input" accept="image/*" style="padding: 7px;">
+                </div>
                 <div class="form-group"><label>Orden (1 va primero)</label><input type="number" id="p-orden" class="form-input" value="1"></div>
             </div>
             <div class="form-group"><label>Descripción</label><input type="text" id="p-desc" class="form-input"></div>
@@ -71,20 +77,25 @@
     </div>
 
     <script>
-        // PEGA AQUÍ LA MISMA CONFIGURACIÓN DE FIREBASE
+    // Inicializaciones de Firebase
         const firebaseConfig = {
-    apiKey: "AIzaSyCbi_zXZbec6_mPbVe7g8sezq6a3rdHO5I",
-    authDomain: "la-abuela-cocina-urbana.firebaseapp.com",
-    projectId: "la-abuela-cocina-urbana",
-    storageBucket: "la-abuela-cocina-urbana.firebasestorage.app",
-    messagingSenderId: "156695415462",
-    appId: "1:156695415462:web:b6e4c19eb9cd8485678267"
-  };
-        firebase.initializeApp(firebaseConfig);
+            apiKey: "AIzaSyCbi_zXZbec6_mPbVe7g8sezq6a3rdHO5I",
+            authDomain: "la-abuela-cocina-urbana.firebaseapp.com",
+            projectId: "la-abuela-cocina-urbana",
+            storageBucket: "la-abuela-cocina-urbana.firebasestorage.app",
+            messagingSenderId: "156695415462",
+            appId: "1:156695415462:web:b6e4c19eb9cd8485678267"
+        };
+        // Para evitar inicializar dos veces si recargas
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage(); // INICIALIZAMOS STORAGE
 
-        // 1. Proteger la ruta (Solo usuarios logueados entran)
+        // 1. Proteger la ruta
         auth.onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById('dashboard-content').style.display = 'block';
@@ -98,23 +109,66 @@
             auth.signOut();
         }
 
-        // 2. Guardar datos en Firestore
-        function guardarPlato() {
-            const nuevoPlato = {
-                nombre: document.getElementById('p-nombre').value,
-                precio: parseFloat(document.getElementById('p-precio').value),
-                categoria: document.getElementById('p-categoria').value,
-                imagen: document.getElementById('p-imagen').value,
-                orden: parseInt(document.getElementById('p-orden').value),
-                descripcion: document.getElementById('p-desc').value
-            };
+        // 2. NUEVA FUNCIÓN: Subir imagen y guardar datos en Firestore
+        async function guardarPlato() {
+            const btnSubmit = document.querySelector('button[onclick="guardarPlato()"]');
+            const fileInput = document.getElementById('p-imagen-file');
+            const file = fileInput.files[0];
 
-            db.collection("productos").add(nuevoPlato)
-                .then(() => {
-                    alert("¡Platillo guardado!");
-                    cargarPlatos(); // Recargar la tabla
-                })
-                .catch((error) => console.error("Error al guardar: ", error));
+            // Validaciones
+            if (!document.getElementById('p-nombre').value) {
+                alert("Por favor ingresa el nombre del plato.");
+                return;
+            }
+            if (!file) {
+                alert("Por favor selecciona o arrastra una imagen.");
+                return;
+            }
+
+            // Cambiamos el texto del botón para que el usuario sepa que está cargando
+            const textoOriginal = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = "⏳ Subiendo imagen y guardando...";
+            btnSubmit.disabled = true;
+
+            try {
+                // A. CREAR UN NOMBRE ÚNICO PARA LA IMAGEN Y SUBIRLA
+                // Usamos Date.now() para que si suben dos fotos con el mismo nombre no se sobreescriban
+                const storageRef = storage.ref('imagenes_menu/' + Date.now() + '_' + file.name);
+                const uploadTask = await storageRef.put(file);
+                
+                // B. OBTENER EL ENLACE PÚBLICO DE LA IMAGEN SUBIDA
+                const downloadURL = await uploadTask.ref.getDownloadURL();
+
+                // C. GUARDAR LOS DATOS EN FIRESTORE CON ESE ENLACE
+                const nuevoPlato = {
+                    nombre: document.getElementById('p-nombre').value,
+                    precio: parseFloat(document.getElementById('p-precio').value),
+                    categoria: document.getElementById('p-categoria').value,
+                    imagen: downloadURL, // Usamos la URL que nos dio Firebase Storage
+                    orden: parseInt(document.getElementById('p-orden').value),
+                    descripcion: document.getElementById('p-desc').value
+                };
+
+                await db.collection("productos").add(nuevoPlato);
+
+                alert("¡Platillo e imagen guardados con éxito!");
+                
+                // Limpiar el formulario
+                document.getElementById('p-nombre').value = '';
+                document.getElementById('p-precio').value = '';
+                document.getElementById('p-desc').value = '';
+                fileInput.value = ''; // Limpiar archivo
+                
+                cargarPlatos(); // Recargar la tabla
+                
+            } catch (error) {
+                console.error("Error al guardar: ", error);
+                alert("Hubo un error al subir el archivo. Intenta de nuevo.");
+            } finally {
+                // Restaurar el botón
+                btnSubmit.innerHTML = textoOriginal;
+                btnSubmit.disabled = false;
+            }
         }
 
         // 3. Leer datos de Firestore para la tabla
@@ -128,21 +182,36 @@
                     tabla.innerHTML += `
                         <tr>
                             <td>${plato.orden}</td>
-                            <td><img src="${plato.imagen}" width="40" style="border-radius:4px;"></td>
+                            <td><img src="${plato.imagen}" width="50" style="border-radius:4px; aspect-ratio: 1/1; object-fit: cover;"></td>
                             <td>${plato.nombre}</td>
                             <td>${plato.categoria.replace('tab-', '')}</td>
                             <td>$${plato.precio.toFixed(2)}</td>
-                            <td><button onclick="borrarPlato('${doc.id}')" style="color:red; background:none; border:none; cursor:pointer;">Borrar</button></td>
+                            <td><button onclick="borrarPlato('${doc.id}', '${plato.imagen}')" style="color:red; background:none; border:none; cursor:pointer; font-weight: bold;">Borrar</button></td>
                         </tr>
                     `;
                 });
             });
         }
 
-        // 4. Borrar plato
-        function borrarPlato(id) {
-            if(confirm("¿Seguro que deseas borrar este plato?")) {
-                db.collection("productos").doc(id).delete().then(() => cargarPlatos());
+        // 4. Borrar plato Y su imagen asociada
+        async function borrarPlato(id, imageUrl) {
+            if(confirm("¿Seguro que deseas borrar este plato permanentemente?")) {
+                try {
+                    // Borramos el documento de la base de datos
+                    await db.collection("productos").doc(id).delete();
+                    
+                    // Extraemos la referencia de la imagen desde la URL para borrarla también y no gastar espacio
+                    if(imageUrl && imageUrl.includes('firebase')) {
+                        const imageRef = storage.refFromURL(imageUrl);
+                        await imageRef.delete();
+                    }
+                    
+                    cargarPlatos();
+                } catch (error) {
+                    console.error("Error al borrar: ", error);
+                    // Si falla el borrado de la imagen pero se borró el plato, recargamos igual
+                    cargarPlatos();
+                }
             }
         }
     </script>
