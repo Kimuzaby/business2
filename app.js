@@ -27,7 +27,7 @@ const db = firebase.firestore();
 
 // Función que lee los datos del Dashboard y los dibuja en la página
 function loadDynamicMenu() {
-    db.collection("productos").orderBy("orden").get().then((querySnapshot) => {
+    db.collection("productos").where("pausado", "!=", true).orderBy("orden").get().then((querySnapshot) => {
         // Limpiamos los contenedores por si acaso
         document.querySelector('#tab-platillos .menu-grid').innerHTML = '';
         document.querySelector('#tab-burgers .menu-grid').innerHTML = '';

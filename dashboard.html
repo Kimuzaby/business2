@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | La Abuela</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -12,14 +12,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-
-
     <style>
-        .admin-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .admin-container { max-width: 1140px; margin: 40px auto; padding: 20px; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid var(--border); padding: 12px; text-align: left; }
-        th { background: var(--bg-header); color: var(--gold); }
     </style>
 </head>
 <body>
@@ -27,19 +22,19 @@
     <div class="admin-container" style="display: none;" id="dashboard-content">
         <div class="admin-header">
             <h2>Gestor de Menú - La Abuela</h2>
-            <button onclick="logout()" class="btn-empty" style="width: auto;">Cerrar Sesión</button>
+            <button onclick="logout()" class="btn-empty" style="width: auto; margin:0;">Cerrar Sesión</button>
         </div>
 
-        <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+        <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 40px;">
             <h3 style="color: var(--gold); margin-bottom: 15px;">Añadir Nuevo Platillo</h3>
             
-            <div class="form-row">
-                <div class="form-group"><label>Nombre del Plato</label><input type="text" id="p-nombre" class="form-input"></div>
-                <div class="form-group"><label>Precio ($)</label><input type="number" id="p-precio" class="form-input" step="0.01"></div>
+            <div class="form-row" style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 2;"><label class="form-label">Nombre del Plato</label><input type="text" id="p-nombre" class="form-input"></div>
+                <div class="form-group" style="flex: 1;"><label class="form-label">Precio ($)</label><input type="number" id="p-precio" class="form-input" step="0.01"></div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Categoría (Pestaña)</label>
+            <div class="form-row" style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Categoría</label>
                     <select id="p-categoria" class="form-input">
                         <option value="tab-platillos">Platillos</option>
                         <option value="tab-burgers">Burgers & Papas</option>
@@ -48,36 +43,57 @@
                         <option value="tab-bebidas">Bebidas & Extras</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Imagen del Platillo</label>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Imagen</label>
                     <input type="file" id="p-imagen-file" class="form-input" accept="image/*" style="padding: 7px;">
                 </div>
-                <div class="form-group"><label>Orden (1 va primero)</label><input type="number" id="p-orden" class="form-input" value="1"></div>
+                <div class="form-group" style="width: 100px;"><label class="form-label">Orden</label><input type="number" id="p-orden" class="form-input" value="1"></div>
             </div>
-            <div class="form-group"><label>Descripción</label><input type="text" id="p-desc" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Descripción</label><input type="text" id="p-desc" class="form-input"></div>
             
-            <button onclick="guardarPlato()" class="btn-submit">Guardar Platillo</button>
+            <button onclick="guardarPlato()" class="btn-submit" style="width: 100%; padding: 12px; background: var(--gold); color: var(--bg-header); border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">+ Guardar Platillo Nuevo</button>
         </div>
 
-        <h3 style="margin-top: 40px; color: var(--gold);">Platillos en el Menú</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Orden</th>
-                    <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Precio</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-platos">
-                </tbody>
-        </table>
+        <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 1.8rem; font-family: 'Playfair Display', serif;">Menú Activo</h3>
+        
+        <div class="category-tabs" style="top: 0;">
+            <button class="tab-btn active" onclick="openAdminTab(event, 'admin-tab-platillos')">Platillos</button>
+            <button class="tab-btn" onclick="openAdminTab(event, 'admin-tab-burgers')">Burgers</button>
+            <button class="tab-btn" onclick="openAdminTab(event, 'admin-tab-tacos')">Tacos</button>
+            <button class="tab-btn" onclick="openAdminTab(event, 'admin-tab-tortas')">Tortas</button>
+            <button class="tab-btn" onclick="openAdminTab(event, 'admin-tab-bebidas')">Bebidas</button>
+        </div>
+
+        <div class="menu-wrapper" style="padding: 20px 0;">
+            <div id="admin-tab-platillos" class="menu-tab active"><div class="menu-grid"></div></div>
+            <div id="admin-tab-burgers" class="menu-tab"><div class="menu-grid"></div></div>
+            <div id="admin-tab-tacos" class="menu-tab"><div class="menu-grid"></div></div>
+            <div id="admin-tab-tortas" class="menu-tab"><div class="menu-grid"></div></div>
+            <div id="admin-tab-bebidas" class="menu-tab"><div class="menu-grid"></div></div>
+        </div>
+    </div>
+
+    <div id="edit-overlay" onclick="cerrarModalEdicion()"></div>
+    <div id="edit-modal">
+        <h3 style="color: var(--gold); margin-bottom: 15px;">Editar Platillo</h3>
+        <input type="hidden" id="edit-id">
+        <input type="hidden" id="edit-imagen-actual">
+        
+        <label class="form-label">Nombre</label><input type="text" id="edit-nombre" class="form-input">
+        <div style="display: flex; gap: 15px;">
+            <div style="flex:1"><label class="form-label">Precio ($)</label><input type="number" id="edit-precio" class="form-input" step="0.01"></div>
+            <div style="flex:1"><label class="form-label">Orden</label><input type="number" id="edit-orden" class="form-input"></div>
+        </div>
+        <label class="form-label">Descripción</label><input type="text" id="edit-desc" class="form-input">
+        <label class="form-label">Cambiar Imagen (Opcional)</label><input type="file" id="edit-imagen-file" class="form-input" accept="image/*" style="padding: 7px;">
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button onclick="guardarEdicion()" class="btn-submit" style="flex: 1; padding: 12px; background: var(--gold); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar Cambios</button>
+            <button onclick="cerrarModalEdicion()" class="btn-empty" style="flex: 1;">Cancelar</button>
+        </div>
     </div>
 
     <script>
-    // Inicializaciones de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCbi_zXZbec6_mPbVe7g8sezq6a3rdHO5I",
             authDomain: "la-abuela-cocina-urbana.firebaseapp.com",
@@ -86,132 +102,200 @@
             messagingSenderId: "156695415462",
             appId: "1:156695415462:web:b6e4c19eb9cd8485678267"
         };
-        // Para evitar inicializar dos veces si recargas
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
         
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const storage = firebase.storage(); // INICIALIZAMOS STORAGE
+        const storage = firebase.storage();
 
-        // 1. Proteger la ruta
         auth.onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById('dashboard-content').style.display = 'block';
-                cargarPlatos();
+                cargarPlatosAdmin();
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        function logout() {
-            auth.signOut();
+        function logout() { auth.signOut(); }
+
+        // Sistema de Pestañas del Admin
+        function openAdminTab(evt, tabName) {
+            let tabcontent = document.getElementsByClassName("menu-tab");
+            for (let i = 0; i < tabcontent.length; i++) tabcontent[i].classList.remove("active");
+            
+            let tablinks = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
         }
 
-        // 2. NUEVA FUNCIÓN: Subir imagen y guardar datos en Firestore
+        // CREAR PLATO NUEVO
         async function guardarPlato() {
             const btnSubmit = document.querySelector('button[onclick="guardarPlato()"]');
             const fileInput = document.getElementById('p-imagen-file');
             const file = fileInput.files[0];
 
-            // Validaciones
-            if (!document.getElementById('p-nombre').value) {
-                alert("Por favor ingresa el nombre del plato.");
-                return;
-            }
-            if (!file) {
-                alert("Por favor selecciona o arrastra una imagen.");
-                return;
-            }
+            if (!document.getElementById('p-nombre').value) { alert("Ingresa el nombre."); return; }
+            if (!file) { alert("Selecciona una imagen."); return; }
 
-            // Cambiamos el texto del botón para que el usuario sepa que está cargando
             const textoOriginal = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = "⏳ Subiendo imagen y guardando...";
-            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = "⏳ Subiendo..."; btnSubmit.disabled = true;
 
             try {
-                // A. CREAR UN NOMBRE ÚNICO PARA LA IMAGEN Y SUBIRLA
-                // Usamos Date.now() para que si suben dos fotos con el mismo nombre no se sobreescriban
                 const storageRef = storage.ref('imagenes_menu/' + Date.now() + '_' + file.name);
                 const uploadTask = await storageRef.put(file);
-                
-                // B. OBTENER EL ENLACE PÚBLICO DE LA IMAGEN SUBIDA
                 const downloadURL = await uploadTask.ref.getDownloadURL();
 
-                // C. GUARDAR LOS DATOS EN FIRESTORE CON ESE ENLACE
                 const nuevoPlato = {
                     nombre: document.getElementById('p-nombre').value,
-                    precio: parseFloat(document.getElementById('p-precio').value),
+                    precio: parseFloat(document.getElementById('p-precio').value) || 0,
                     categoria: document.getElementById('p-categoria').value,
-                    imagen: downloadURL, // Usamos la URL que nos dio Firebase Storage
-                    orden: parseInt(document.getElementById('p-orden').value),
-                    descripcion: document.getElementById('p-desc').value
+                    imagen: downloadURL,
+                    orden: parseInt(document.getElementById('p-orden').value) || 99,
+                    descripcion: document.getElementById('p-desc').value,
+                    pausado: false // Nuevo campo para ocultar platos
                 };
 
                 await db.collection("productos").add(nuevoPlato);
-
-                alert("¡Platillo e imagen guardados con éxito!");
+                alert("¡Platillo guardado!");
                 
-                // Limpiar el formulario
                 document.getElementById('p-nombre').value = '';
                 document.getElementById('p-precio').value = '';
                 document.getElementById('p-desc').value = '';
-                fileInput.value = ''; // Limpiar archivo
+                fileInput.value = '';
                 
-                cargarPlatos(); // Recargar la tabla
-                
+                cargarPlatosAdmin();
             } catch (error) {
-                console.error("Error al guardar: ", error);
-                alert("Hubo un error al subir el archivo. Intenta de nuevo.");
+                console.error(error); alert("Error al subir.");
             } finally {
-                // Restaurar el botón
-                btnSubmit.innerHTML = textoOriginal;
-                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = textoOriginal; btnSubmit.disabled = false;
             }
         }
 
-        // 3. Leer datos de Firestore para la tabla
-        function cargarPlatos() {
-            db.collection("productos").orderBy("categoria").orderBy("orden").get().then((querySnapshot) => {
-                const tabla = document.getElementById('tabla-platos');
-                tabla.innerHTML = '';
-                
+        // DIBUJAR EL MENÚ EN EL DASHBOARD
+        function cargarPlatosAdmin() {
+            db.collection("productos").orderBy("orden").get().then((querySnapshot) => {
+                // Limpiar contenedores
+                document.querySelector('#admin-tab-platillos .menu-grid').innerHTML = '';
+                document.querySelector('#admin-tab-burgers .menu-grid').innerHTML = '';
+                document.querySelector('#admin-tab-tacos .menu-grid').innerHTML = '';
+                document.querySelector('#admin-tab-tortas .menu-grid').innerHTML = '';
+                document.querySelector('#admin-tab-bebidas .menu-grid').innerHTML = '';
+
                 querySnapshot.forEach((doc) => {
                     const plato = doc.data();
-                    tabla.innerHTML += `
-                        <tr>
-                            <td>${plato.orden}</td>
-                            <td><img src="${plato.imagen}" width="50" style="border-radius:4px; aspect-ratio: 1/1; object-fit: cover;"></td>
-                            <td>${plato.nombre}</td>
-                            <td>${plato.categoria.replace('tab-', '')}</td>
-                            <td>$${plato.precio.toFixed(2)}</td>
-                            <td><button onclick="borrarPlato('${doc.id}', '${plato.imagen}')" style="color:red; background:none; border:none; cursor:pointer; font-weight: bold;">Borrar</button></td>
-                        </tr>
+                    const id = doc.id;
+                    
+                    // Clases dinámicas si el plato está pausado
+                    const cardClass = plato.pausado ? "product-card paused" : "product-card";
+                    const badge = plato.pausado ? `<div class="paused-badge">Pausado (Oculto)</div>` : '';
+                    const toggleText = plato.pausado ? "▶ Activar" : "⏸ Pausar";
+
+                    // Escapar comillas simples en strings para los botones onclick
+                    const safeName = plato.nombre.replace(/'/g, "\\'");
+                    const safeDesc = (plato.descripcion || '').replace(/'/g, "\\'");
+                    const safeImg = (plato.imagen || '').replace(/'/g, "\\'");
+
+                    const htmlContent = `
+                        <div class="${cardClass}" style="position: relative;">
+                            ${badge}
+                            <img src="${plato.imagen}" alt="${plato.nombre}" class="product-img">
+                            <div class="product-info">
+                                <div class="card-header">
+                                    <span class="product-title">${plato.nombre}</span>
+                                    <span class="product-price">$${plato.precio.toFixed(2)}</span>
+                                </div>
+                                <p class="product-desc" style="font-size:0.75rem;">Orden: ${plato.orden} | ${plato.descripcion || ''}</p>
+                                
+                                <div class="admin-actions">
+                                    <button class="btn-admin btn-edit" onclick="abrirModalEdicion('${id}', '${safeName}', ${plato.precio}, ${plato.orden}, '${safeDesc}', '${safeImg}')">✎ Editar</button>
+                                    <button class="btn-admin btn-pause" onclick="togglePausa('${id}', ${plato.pausado})">${toggleText}</button>
+                                    <button class="btn-admin btn-delete" onclick="borrarPlato('${id}', '${safeImg}')">🗑 Borrar</button>
+                                </div>
+                            </div>
+                        </div>
                     `;
+
+                    // Usamos el ID de destino reemplazando 'tab-' por 'admin-tab-'
+                    const gridTarget = document.querySelector(`#admin-${plato.categoria} .menu-grid`);
+                    if (gridTarget) gridTarget.innerHTML += htmlContent;
                 });
             });
         }
 
-        // 4. Borrar plato Y su imagen asociada
+        // FUNCIONES DE EDICIÓN Y BORRADO
         async function borrarPlato(id, imageUrl) {
-            if(confirm("¿Seguro que deseas borrar este plato permanentemente?")) {
+            if(confirm("¿Seguro que deseas borrar este plato permanentemente? Desaparecerá de la app al instante.")) {
                 try {
-                    // Borramos el documento de la base de datos
                     await db.collection("productos").doc(id).delete();
-                    
-                    // Extraemos la referencia de la imagen desde la URL para borrarla también y no gastar espacio
                     if(imageUrl && imageUrl.includes('firebase')) {
-                        const imageRef = storage.refFromURL(imageUrl);
-                        await imageRef.delete();
+                        await storage.refFromURL(imageUrl).delete();
                     }
-                    
-                    cargarPlatos();
-                } catch (error) {
-                    console.error("Error al borrar: ", error);
-                    // Si falla el borrado de la imagen pero se borró el plato, recargamos igual
-                    cargarPlatos();
+                    cargarPlatosAdmin();
+                } catch (error) { console.error(error); cargarPlatosAdmin(); }
+            }
+        }
+
+        async function togglePausa(id, estadoActual) {
+            const nuevoEstado = !estadoActual;
+            await db.collection("productos").doc(id).update({ pausado: nuevoEstado });
+            cargarPlatosAdmin();
+        }
+
+        // LÓGICA DEL MODAL DE EDICIÓN
+        function abrirModalEdicion(id, nombre, precio, orden, desc, imagen) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-nombre').value = nombre;
+            document.getElementById('edit-precio').value = precio;
+            document.getElementById('edit-orden').value = orden;
+            document.getElementById('edit-desc').value = desc;
+            document.getElementById('edit-imagen-actual').value = imagen;
+            
+            document.getElementById('edit-overlay').style.display = 'block';
+            document.getElementById('edit-modal').style.display = 'block';
+        }
+
+        function cerrarModalEdicion() {
+            document.getElementById('edit-overlay').style.display = 'none';
+            document.getElementById('edit-modal').style.display = 'none';
+            document.getElementById('edit-imagen-file').value = ''; // limpiar archivo
+        }
+
+        async function guardarEdicion() {
+            const id = document.getElementById('edit-id').value;
+            const fileInput = document.getElementById('edit-imagen-file');
+            const file = fileInput.files[0];
+            
+            let imageUrl = document.getElementById('edit-imagen-actual').value;
+
+            const btnSubmit = document.querySelector('#edit-modal .btn-submit');
+            btnSubmit.innerHTML = "⏳ Guardando..."; btnSubmit.disabled = true;
+
+            try {
+                // Si el usuario subió una foto nueva, la reemplazamos
+                if (file) {
+                    const storageRef = storage.ref('imagenes_menu/' + Date.now() + '_' + file.name);
+                    const uploadTask = await storageRef.put(file);
+                    imageUrl = await uploadTask.ref.getDownloadURL();
                 }
+
+                // Actualizamos el documento en la base de datos
+                await db.collection("productos").doc(id).update({
+                    nombre: document.getElementById('edit-nombre').value,
+                    precio: parseFloat(document.getElementById('edit-precio').value) || 0,
+                    orden: parseInt(document.getElementById('edit-orden').value) || 99,
+                    descripcion: document.getElementById('edit-desc').value,
+                    imagen: imageUrl
+                });
+
+                cerrarModalEdicion();
+                cargarPlatosAdmin();
+            } catch (error) {
+                console.error(error); alert("Error al editar.");
+            } finally {
+                btnSubmit.innerHTML = "Guardar Cambios"; btnSubmit.disabled = false;
             }
         }
     </script>

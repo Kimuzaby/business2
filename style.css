@@ -690,3 +690,75 @@ footer {
         padding-top: 80px; 
     }
 }
+
+/* ==========================================
+   ESTILOS PARA EL DASHBOARD ADMINISTRATIVO
+   ========================================== */
+
+/* Botones de acción dentro de la tarjeta del menú en el dashboard */
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-admin {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.btn-admin:hover { opacity: 0.8; }
+.btn-edit { background: var(--gold); color: var(--bg-header); }
+.btn-pause { background: #555; color: white; }
+.btn-delete { background: #ff5252; color: white; }
+
+/* Estado "Pausado" u "Oculto" */
+.product-card.paused {
+    opacity: 0.5;
+    filter: grayscale(100%);
+    border: 1px dashed #ff5252;
+}
+
+.paused-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff5252;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+/* Modal de Edición Rápida */
+#edit-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    background: var(--bg-card);
+    padding: 25px;
+    border-radius: var(--radius);
+    z-index: 3000;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    border: 1px solid var(--gold);
+}
+
+#edit-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 2999;
+}
