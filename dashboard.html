@@ -239,9 +239,17 @@
         }
 
         async function togglePausa(id, estadoActual) {
-            const nuevoEstado = !estadoActual;
-            await db.collection("productos").doc(id).update({ pausado: nuevoEstado });
-            cargarPlatosAdmin();
+            // Aseguramos que estadoActual sea tratado estrictamente como booleano
+            const isPaused = estadoActual === true || estadoActual === "true";
+            const nuevoEstado = !isPaused;
+            
+            try {
+                await db.collection("productos").doc(id).update({ pausado: nuevoEstado });
+                cargarPlatosAdmin(); // Recarga la vista para reflejar el cambio
+            } catch (error) {
+                console.error("Error al cambiar estado:", error);
+                alert("Hubo un error al actualizar el estado del platillo.");
+            }
         }
 
         // LÓGICA DEL MODAL DE EDICIÓN
