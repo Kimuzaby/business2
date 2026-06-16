@@ -249,7 +249,7 @@ async function sendWhatsApp() {
     const deliveryCost = (deliveryMethod === 'delivery' && deliveryZone !== '') ? 3.00 : 0;
     const totalOrder = (subtotalOrder + deliveryCost).toFixed(2);
 
-    const phone = "50370483939"; 
+    const phone = "50372701971"; 
     
     let messageText = `*NUEVO PEDIDO: LA ABUELA COCINA URBANA*\n\n`;
     messageText += `*Cliente:* ${clientName}\n`;
@@ -291,7 +291,7 @@ async function sendWhatsApp() {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         
         if (isIOS) {
-            const phone = "50370483939";
+            const phone = "50372701971";
             const message = url.split('?text=')[1];
             const directUrl = `whatsapp://send?phone=${phone}&text=${message || ''}`;
             
