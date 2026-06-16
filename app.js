@@ -9,6 +9,63 @@ console.log("App cargada. Funciones disponibles:", {
     confirmMapLocation: typeof confirmMapLocation
 });
 
+// ==========================================
+// INICIALIZACIÓN DE FIREBASE (MENÚ DINÁMICO)
+// ==========================================
+const firebaseConfig = {
+    apiKey: "AIzaSyCbi_zXZbec6_mPbVe7g8sezq6a3rdHO5I",
+    authDomain: "la-abuela-cocina-urbana.firebaseapp.com",
+    projectId: "la-abuela-cocina-urbana",
+    storageBucket: "la-abuela-cocina-urbana.firebasestorage.app",
+    messagingSenderId: "156695415462",
+    appId: "1:156695415462:web:b6e4c19eb9cd8485678267"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Función que lee los datos del Dashboard y los dibuja en la página
+function loadDynamicMenu() {
+    db.collection("productos").orderBy("orden").get().then((querySnapshot) => {
+        // Limpiamos los contenedores por si acaso
+        document.querySelector('#tab-platillos .menu-grid').innerHTML = '';
+        document.querySelector('#tab-burgers .menu-grid').innerHTML = '';
+        document.querySelector('#tab-tacos .menu-grid').innerHTML = '';
+        document.querySelector('#tab-tortas .menu-grid').innerHTML = '';
+        document.querySelector('#tab-bebidas .menu-grid').innerHTML = '';
+
+        querySnapshot.forEach((doc) => {
+            const plato = doc.data();
+            const id = doc.id; // El ID único que genera Firebase
+
+            const htmlContent = `
+                <div class="product-card">
+                    <img src="${plato.imagen}" alt="${plato.nombre}" class="product-img">
+                    <div class="product-info">
+                        <div class="card-header">
+                            <span class="product-title">${plato.nombre}</span>
+                            <span class="product-price">$${plato.precio.toFixed(2)}</span>
+                        </div>
+                        <p class="product-desc">${plato.descripcion || ''}</p>
+                        <button class="btn-add" onclick="addToCart('${id}', '${plato.nombre}', ${plato.precio})">+ Agregar</button>
+                    </div>
+                </div>
+            `;
+
+            // Insertar el platillo en la pestaña correcta (ej: #tab-platillos)
+            const gridTarget = document.querySelector(`#${plato.categoria} .menu-grid`);
+            if (gridTarget) {
+                gridTarget.innerHTML += htmlContent;
+            }
+        });
+    }).catch((error) => {
+        console.error("Error al cargar el menú desde Firebase: ", error);
+    });
+}
+
+
+
 
 let cart = JSON.parse(localStorage.getItem('cart_la_abuela')) || [];
 
@@ -21,7 +78,10 @@ const btnWhatsApp = document.getElementById('btn-whatsapp');
 const btnEmpty = document.getElementById('btn-empty');
 
 // Renderizar el carrito al cargar
-window.onload = () => saveAndRenderCart();
+window.onload = () => {
+    saveAndRenderCart();
+    loadDynamicMenu(); // <--- Aquí llamamos a tu nueva base de datos
+};
 
 function openTab(evt, tabName) {
     let tabcontent = document.getElementsByClassName("menu-tab");

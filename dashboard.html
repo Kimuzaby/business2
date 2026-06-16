@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | La Abuela</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .admin-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+        th { background: var(--bg-header); color: var(--gold); }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container" style="display: none;" id="dashboard-content">
+        <div class="admin-header">
+            <h2>Gestor de Menú - La Abuela</h2>
+            <button onclick="logout()" class="btn-empty" style="width: auto;">Cerrar Sesión</button>
+        </div>
+
+        <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="color: var(--gold); margin-bottom: 15px;">Añadir Nuevo Platillo</h3>
+            
+            <div class="form-row">
+                <div class="form-group"><label>Nombre del Plato</label><input type="text" id="p-nombre" class="form-input"></div>
+                <div class="form-group"><label>Precio ($)</label><input type="number" id="p-precio" class="form-input" step="0.01"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Categoría (Pestaña)</label>
+                    <select id="p-categoria" class="form-input">
+                        <option value="tab-platillos">Platillos</option>
+                        <option value="tab-burgers">Burgers & Papas</option>
+                        <option value="tab-tacos">Tacos & Nachos</option>
+                        <option value="tab-tortas">Tortas, Gringas & Burritos</option>
+                        <option value="tab-bebidas">Bebidas & Extras</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>URL de Imagen (Ej: img/comida.jpg)</label><input type="text" id="p-imagen" class="form-input" value="img/food.png"></div>
+                <div class="form-group"><label>Orden (1 va primero)</label><input type="number" id="p-orden" class="form-input" value="1"></div>
+            </div>
+            <div class="form-group"><label>Descripción</label><input type="text" id="p-desc" class="form-input"></div>
+            
+            <button onclick="guardarPlato()" class="btn-submit">Guardar Platillo</button>
+        </div>
+
+        <h3 style="margin-top: 40px; color: var(--gold);">Platillos en el Menú</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Orden</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-platos">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // PEGA AQUÍ LA MISMA CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+    apiKey: "AIzaSyCbi_zXZbec6_mPbVe7g8sezq6a3rdHO5I",
+    authDomain: "la-abuela-cocina-urbana.firebaseapp.com",
+    projectId: "la-abuela-cocina-urbana",
+    storageBucket: "la-abuela-cocina-urbana.firebasestorage.app",
+    messagingSenderId: "156695415462",
+    appId: "1:156695415462:web:b6e4c19eb9cd8485678267"
+  };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // 1. Proteger la ruta (Solo usuarios logueados entran)
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('dashboard-content').style.display = 'block';
+                cargarPlatos();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        function logout() {
+            auth.signOut();
+        }
+
+        // 2. Guardar datos en Firestore
+        function guardarPlato() {
+            const nuevoPlato = {
+                nombre: document.getElementById('p-nombre').value,
+                precio: parseFloat(document.getElementById('p-precio').value),
+                categoria: document.getElementById('p-categoria').value,
+                imagen: document.getElementById('p-imagen').value,
+                orden: parseInt(document.getElementById('p-orden').value),
+                descripcion: document.getElementById('p-desc').value
+            };
+
+            db.collection("productos").add(nuevoPlato)
+                .then(() => {
+                    alert("¡Platillo guardado!");
+                    cargarPlatos(); // Recargar la tabla
+                })
+                .catch((error) => console.error("Error al guardar: ", error));
+        }
+
+        // 3. Leer datos de Firestore para la tabla
+        function cargarPlatos() {
+            db.collection("productos").orderBy("categoria").orderBy("orden").get().then((querySnapshot) => {
+                const tabla = document.getElementById('tabla-platos');
+                tabla.innerHTML = '';
+                
+                querySnapshot.forEach((doc) => {
+                    const plato = doc.data();
+                    tabla.innerHTML += `
+                        <tr>
+                            <td>${plato.orden}</td>
+                            <td><img src="${plato.imagen}" width="40" style="border-radius:4px;"></td>
+                            <td>${plato.nombre}</td>
+                            <td>${plato.categoria.replace('tab-', '')}</td>
+                            <td>$${plato.precio.toFixed(2)}</td>
+                            <td><button onclick="borrarPlato('${doc.id}')" style="color:red; background:none; border:none; cursor:pointer;">Borrar</button></td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        // 4. Borrar plato
+        function borrarPlato(id) {
+            if(confirm("¿Seguro que deseas borrar este plato?")) {
+                db.collection("productos").doc(id).delete().then(() => cargarPlatos());
+            }
+        }
+    </script>
+</body>
+</html>

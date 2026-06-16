@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Admin La Abuela</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--bg); }
+        .login-box { background: var(--bg-card); padding: 40px; border-radius: var(--radius); border: 1px solid var(--gold); text-align: center; width: 100%; max-width: 400px; }
+        .login-box h2 { color: var(--gold); margin-bottom: 20px; font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <img src="img/logo.png" alt="Logo" style="width: 80px; margin-bottom: 20px;">
+        <h2>Acceso Administrativo</h2>
+        <input type="email" id="email" class="form-input" placeholder="Correo electrónico">
+        <input type="password" id="password" class="form-input" placeholder="Contraseña">
+        <button onclick="login()" class="btn-submit" style="margin-top: 15px;">Ingresar al Dashboard</button>
+        <p id="error-msg" style="color: #ff5252; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
+    </div>
+
+    <script>
+        // PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE DEL PASO 1
+        const firebaseConfig = {
+    apiKey: "AIzaSyCbi_zXZbec6_mPbVe7g8sezq6a3rdHO5I",
+    authDomain: "la-abuela-cocina-urbana.firebaseapp.com",
+    projectId: "la-abuela-cocina-urbana",
+    storageBucket: "la-abuela-cocina-urbana.firebasestorage.app",
+    messagingSenderId: "156695415462",
+    appId: "1:156695415462:web:b6e4c19eb9cd8485678267"
+  };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            
+            auth.signInWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    window.location.href = "dashboard.html"; // Redirigir si es exitoso
+                })
+                .catch((error) => {
+                    document.getElementById('error-msg').style.display = 'block';
+                });
+        }
+    </script>
+</body>
+</html>
