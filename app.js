@@ -27,7 +27,8 @@ const db = firebase.firestore();
 
 // Función que lee los datos del Dashboard y los dibuja en la página
 function loadDynamicMenu() {
-    db.collection("productos").where("pausado", "!=", true).orderBy("orden").get().then((querySnapshot) => {
+    // Solución: Quitamos el .where() de Firebase para evitar errores de índices. Leemos todo ordenado.
+    db.collection("productos").orderBy("orden").get().then((querySnapshot) => {
         // Limpiamos los contenedores por si acaso
         document.querySelector('#tab-platillos .menu-grid').innerHTML = '';
         document.querySelector('#tab-burgers .menu-grid').innerHTML = '';
@@ -38,6 +39,11 @@ function loadDynamicMenu() {
         querySnapshot.forEach((doc) => {
             const plato = doc.data();
             const id = doc.id; // El ID único que genera Firebase
+
+            // MAGIA AQUÍ: Filtro local. Si el plato está pausado, saltamos y no lo dibujamos.
+            if (plato.pausado === true) {
+                return; 
+            }
 
             const htmlContent = `
                 <div class="product-card">

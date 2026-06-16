@@ -188,10 +188,13 @@
                     const plato = doc.data();
                     const id = doc.id;
                     
+                    // Solución: Aseguramos que sea estrictamente un booleano (evita el error 'undefined' en HTML)
+                    const isPausado = plato.pausado === true;
+                    
                     // Clases dinámicas si el plato está pausado
-                    const cardClass = plato.pausado ? "product-card paused" : "product-card";
-                    const badge = plato.pausado ? `<div class="paused-badge">Pausado (Oculto)</div>` : '';
-                    const toggleText = plato.pausado ? "▶ Activar" : "⏸ Pausar";
+                    const cardClass = isPausado ? "product-card paused" : "product-card";
+                    const badge = isPausado ? `<div class="paused-badge">Pausado (Oculto)</div>` : '';
+                    const toggleText = isPausado ? "▶ Activar" : "⏸ Pausar";
 
                     // Escapar comillas simples en strings para los botones onclick
                     const safeName = plato.nombre.replace(/'/g, "\\'");
@@ -211,7 +214,7 @@
                                 
                                 <div class="admin-actions">
                                     <button class="btn-admin btn-edit" onclick="abrirModalEdicion('${id}', '${safeName}', ${plato.precio}, ${plato.orden}, '${safeDesc}', '${safeImg}')">✎ Editar</button>
-                                    <button class="btn-admin btn-pause" onclick="togglePausa('${id}', ${plato.pausado})">${toggleText}</button>
+                                    <button class="btn-admin btn-pause" onclick="togglePausa('${id}', ${isPausado})">${toggleText}</button>
                                     <button class="btn-admin btn-delete" onclick="borrarPlato('${id}', '${safeImg}')">🗑 Borrar</button>
                                 </div>
                             </div>
@@ -224,6 +227,9 @@
                 });
             });
         }
+
+
+        
 
         // FUNCIONES DE EDICIÓN Y BORRADO
         async function borrarPlato(id, imageUrl) {
